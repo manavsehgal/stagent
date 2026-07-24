@@ -49,7 +49,7 @@ export default function SettingsPage() {
       description="Manage your Orionfold Relay configuration"
     >
       <SettingsHashFocus />
-      <div className="space-y-6">
+      <div className="settings-density space-y-4">
         <SettingsAnchor id="settings-access">
           <AccessSection />
         </SettingsAnchor>
@@ -91,49 +91,53 @@ export default function SettingsPage() {
         <SettingsAnchor id="settings-provider-routing">
           <ProvidersAndRuntimesSection />
         </SettingsAnchor>
-        <SettingsAnchor id="settings-chat-section">
-          <ChatSettingsSection />
-        </SettingsAnchor>
-        <SettingsAnchor id="settings-runtime">
-          <RuntimeTimeoutSection />
-        </SettingsAnchor>
-        <SettingsAnchor id="settings-learning">
-          <LearningContextSection />
-        </SettingsAnchor>
-        <SettingsAnchor id="settings-web-search">
-          <WebSearchSection />
-        </SettingsAnchor>
-        <SettingsAnchor id="settings-environment">
-          <EnvironmentSection />
-        </SettingsAnchor>
-        <SettingsAnchor id="settings-app-authoring">
-          <AppViewDiagnosticsSection />
-        </SettingsAnchor>
-        <SettingsAnchor id="settings-dashboard">
-          <DashboardSection />
-        </SettingsAnchor>
-        <SettingsAnchor id="settings-browser-tools">
-          <BrowserToolsSection />
-        </SettingsAnchor>
-        <SettingsAnchor id="settings-channels">
-          <ChannelsSection />
-        </SettingsAnchor>
-        <SettingsAnchor id="settings-github">
-          <GitHubSection />
-        </SettingsAnchor>
-        <SettingsAnchor id="settings-budget">
-          <BudgetGuardrailsSection />
-        </SettingsAnchor>
-        <SettingsAnchor id="settings-permissions">
-          <PermissionsSections />
-        </SettingsAnchor>
-        <SettingsAnchor id="settings-snapshots">
-          <DatabaseSnapshotsSection />
-          <RecoverySection />
-        </SettingsAnchor>
-        <SettingsAnchor id="settings-data">
-          <DataManagementSection allowed={dataOpsAllowed} />
-        </SettingsAnchor>
+        <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-2">
+          <SettingsAnchor id="settings-chat-section">
+            <ChatSettingsSection />
+          </SettingsAnchor>
+          <SettingsAnchor id="settings-runtime">
+            <RuntimeTimeoutSection />
+          </SettingsAnchor>
+          <SettingsAnchor id="settings-learning">
+            <LearningContextSection />
+          </SettingsAnchor>
+          <SettingsAnchor id="settings-web-search">
+            <WebSearchSection />
+          </SettingsAnchor>
+          <SettingsAnchor id="settings-environment">
+            <EnvironmentSection />
+          </SettingsAnchor>
+          <SettingsAnchor id="settings-app-authoring">
+            <AppViewDiagnosticsSection />
+          </SettingsAnchor>
+          <SettingsAnchor id="settings-dashboard">
+            <DashboardSection />
+          </SettingsAnchor>
+          <SettingsAnchor id="settings-browser-tools">
+            <BrowserToolsSection />
+          </SettingsAnchor>
+          <SettingsAnchor id="settings-channels">
+            <ChannelsSection />
+          </SettingsAnchor>
+          <SettingsAnchor id="settings-github">
+            <GitHubSection />
+          </SettingsAnchor>
+          <SettingsAnchor id="settings-budget">
+            <BudgetGuardrailsSection />
+          </SettingsAnchor>
+          <SettingsAnchor id="settings-permissions">
+            <PermissionsSections />
+          </SettingsAnchor>
+          <SettingsAnchor id="settings-snapshots">
+            <div className="space-y-4">
+              <DatabaseSnapshotsSection />
+              <RecoverySection />
+            </div>
+          </SettingsAnchor>
+          <SettingsAnchor id="settings-data">
+            <DataManagementSection allowed={dataOpsAllowed} />
+          </SettingsAnchor>
+        </div>
       </div>
     </PageShell>
   );

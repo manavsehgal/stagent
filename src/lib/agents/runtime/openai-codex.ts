@@ -1060,7 +1060,7 @@ async function testOpenAIConnection(): Promise<RuntimeConnectionResult> {
     client = await auth.connect(getLaunchCwd());
     await ensureOpenAICodexClientAuthenticated(client, auth);
     const accountState = await readCodexAuthStateFromClient(client, {
-      refreshToken: auth.apiKeySource === "oauth",
+      refreshToken: false,
     });
 
     return {

@@ -13,7 +13,7 @@ export async function GET() {
   }
 
   try {
-    const current = await readCodexAuthState({ refreshToken: true });
+    const current = await readCodexAuthState({ refreshToken: false });
     return NextResponse.json({
       ...settings,
       oauthConnected: current.connected,

@@ -60,7 +60,7 @@ export async function GET(request: Request) {
   let openaiAuth = initialOpenaiAuth;
   if (openaiAuth.method === "oauth") {
     try {
-      const current = await readCodexAuthState({ refreshToken: true });
+      const current = await readCodexAuthState({ refreshToken: false });
       openaiAuth = {
         ...openaiAuth,
         oauthConnected: current.connected,

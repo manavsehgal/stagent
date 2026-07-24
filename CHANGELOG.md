@@ -8,6 +8,29 @@ them; the current package and repository identity is Orionfold Relay.
 
 ## [Unreleased]
 
+### Changed
+
+- **Routing by cost now means minimizing additional provider spend.** Healthy
+  local and included-plan runtimes precede metered APIs; the Settings preview,
+  suggestion API, and execution router share the same dated evidence model.
+  The UI also distinguishes eligible fallback priority from the resulting
+  general-task order and renames Manual to Strict default.
+- **Settings uses denser, progressive, responsive composition.** Provider
+  methods show only mode-relevant controls, Chat and Runtime controls pair on
+  wider screens, and independent sections use available horizontal space while
+  preserving narrow-screen order and accessibility.
+
+### Fixed
+
+- **Detected Codex auth no longer looks connected before activation.** API-key
+  mode remains selected until explicit isolated adoption succeeds; successful
+  adoption changes the badge to **Connected via ChatGPT**, while failures keep
+  the working API runtime selected and provide a named recovery direction.
+- **Codex App Server adoption and health checks no longer force OAuth token
+  rotation.** Relay uses the documented normal account-read path, allowing a
+  valid device sign-in to be adopted and verified inside Relay's isolated
+  credential store.
+
 ## [0.46.3] — 2026-07-23
 
 ### Changed

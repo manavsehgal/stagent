@@ -317,7 +317,7 @@ export async function ensureOpenAICodexClientAuthenticated(
   }
 
   const state = await readCodexAuthStateFromClient(client, {
-    refreshToken: true,
+    refreshToken: false,
   });
   if (!state.connected || state.account?.type !== "chatgpt") {
     throw new Error(

@@ -65,6 +65,11 @@ describe("runtime routing status snapshot", () => {
           {
             runtimeId,
             configured: runtimeId !== "lmstudio",
+            billingMode:
+              runtimeId === "claude-code" ||
+              runtimeId === "openai-codex-app-server"
+                ? "subscription"
+                : "usage",
           },
         ]),
       ),
@@ -95,6 +100,10 @@ describe("runtime routing status snapshot", () => {
       ready: true,
       endpointReachable: true,
       modelId: "qwen3:8b",
+      costEvidence: {
+        kind: "local_compute",
+        comparableCostPerMillionMicros: null,
+      },
       capabilityLimits: expect.arrayContaining(["No filesystem tools", "No Bash"]),
     });
     expect(statuses.find((status) => status.runtimeId === "litellm")).toMatchObject({
@@ -110,6 +119,18 @@ describe("runtime routing status snapshot", () => {
       ready: false,
       healthReason: "Not configured",
       checkedAt: null,
+      costEvidence: {
+        kind: "unknown",
+        comparableCostPerMillionMicros: null,
+      },
+    });
+    expect(
+      statuses.find((status) => status.runtimeId === "claude-code"),
+    ).toMatchObject({
+      costEvidence: {
+        kind: "included_plan",
+        comparableCostPerMillionMicros: null,
+      },
     });
     expect(mockTestRuntimeConnection).not.toHaveBeenCalledWith("lmstudio");
   });

@@ -18,7 +18,8 @@ import {
   getRuntimeSetupStates,
   type RuntimeSetupState,
 } from "./runtime-setup";
-import { getComparableRuntimeCost } from "./runtime-routing-evidence";
+import { getRuntimeCostEvidence } from "./runtime-routing-evidence";
+import type { RuntimeCostEvidence } from "./runtime-cost-model";
 import { sanitizeProviderError } from "@/lib/agents/runtime/provider-endpoint";
 import {
   classifyRuntimeReadiness,
@@ -47,6 +48,7 @@ export interface RuntimeRoutingStatus {
   endpointReachable: boolean | null;
   modelId: string | null;
   comparableCostPerMillionMicros: number | null;
+  costEvidence: RuntimeCostEvidence;
   capabilitySummary: string[];
   capabilityLimits: string[];
 }
@@ -194,6 +196,12 @@ async function statusForRuntime(
       endpointReachable: null,
       modelId: null,
       comparableCostPerMillionMicros: null,
+      costEvidence: {
+        kind: "unknown",
+        label: "Not configured",
+        comparableCostPerMillionMicros: null,
+        sourceAsOf: null,
+      },
       ...capabilities,
     };
   }
@@ -225,10 +233,18 @@ async function statusForRuntime(
   });
   await recordRuntimeReadiness(runtimeId, readiness).catch(() => undefined);
   const modelId = modelResult.modelId;
-  const comparableCostPerMillionMicros = await getComparableRuntimeCost({
+  const costEvidence = await getRuntimeCostEvidence({
     runtimeId,
     modelId,
-  }).catch(() => null);
+    setup,
+  }).catch(
+    (): RuntimeCostEvidence => ({
+      kind: "unknown",
+      label: "Economics unavailable",
+      comparableCostPerMillionMicros: null,
+      sourceAsOf: null,
+    }),
+  );
   return {
     runtimeId,
     label: getRuntimeCatalogEntry(runtimeId).label,
@@ -243,7 +259,9 @@ async function statusForRuntime(
     credentialSource: readiness.credentialSource,
     endpointReachable: readiness.endpointReachable,
     modelId,
-    comparableCostPerMillionMicros,
+    comparableCostPerMillionMicros:
+      costEvidence.comparableCostPerMillionMicros,
+    costEvidence,
     ...capabilities,
   };
 }
@@ -292,6 +310,12 @@ export async function getRuntimeRoutingStatuses(options?: {
         endpointReachable: setup[runtimeId].configured ? false : null,
         modelId: null,
         comparableCostPerMillionMicros: null,
+        costEvidence: {
+          kind: "unknown",
+          label: "Economics unavailable",
+          comparableCostPerMillionMicros: null,
+          sourceAsOf: null,
+        },
         ...describeCapabilities(runtimeId),
       };
     });

@@ -9,6 +9,13 @@ interface AuthMethodOption {
   icon: typeof Key;
   title: string;
   description: string;
+  status?: string;
+  action?: {
+    label: string;
+    pendingLabel: string;
+    pending: boolean;
+    onClick: () => void;
+  };
 }
 
 interface AuthMethodSelectorProps {
@@ -49,37 +56,63 @@ export function AuthMethodSelector({
           const Icon = method.icon;
           const isSelected = value === method.id;
           return (
-            <button
+            <div
               key={method.id}
-              type="button"
-              onClick={() => onChange(method.id)}
               className={cn(
-                "flex flex-col items-center gap-2 rounded-lg border-2 p-4 text-center transition-all",
+                "min-w-0 rounded-lg border-2 text-center transition-colors",
                 "hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 isSelected
                   ? "border-primary bg-primary/5"
                   : "border-border/40 bg-card/30"
               )}
             >
-              <Icon className={cn(
-                "h-5 w-5",
-                isSelected ? "text-primary" : "text-muted-foreground"
-              )} />
-              <span className={cn(
-                "text-sm font-medium",
-                isSelected ? "text-foreground" : "text-muted-foreground"
-              )}>
-                {method.title}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {method.description}
-              </span>
-              {recommendedMethod === method.id && !isSelected && (
-                <span className="text-[10px] font-medium uppercase tracking-wider text-primary/70 mt-0.5">
-                  Recommended
+              <button
+                type="button"
+                onClick={() => onChange(method.id)}
+                className="flex w-full min-w-0 items-center gap-2 px-3 py-2 text-left"
+                aria-pressed={isSelected}
+              >
+                <Icon className={cn(
+                  "h-4 w-4 shrink-0",
+                  isSelected ? "text-primary" : "text-muted-foreground"
+                )} />
+                <span className="min-w-0 flex-1">
+                  <span className={cn(
+                    "block truncate text-sm font-medium",
+                    isSelected ? "text-foreground" : "text-muted-foreground"
+                  )}>
+                    {method.title}
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    {method.description}
+                  </span>
+                  {method.status && (
+                    <span className="mt-1 block text-[10px] font-medium uppercase tracking-wide text-status-warning">
+                      {method.status}
+                    </span>
+                  )}
+                  {recommendedMethod === method.id && !isSelected && (
+                    <span className="mt-1 block text-[10px] font-medium uppercase tracking-wide text-primary/70">
+                      Recommended
+                    </span>
+                  )}
                 </span>
+              </button>
+              {method.action && (
+                <div className="border-t border-border px-3 py-2 text-left">
+                  <button
+                    type="button"
+                    onClick={method.action.onClick}
+                    disabled={method.action.pending}
+                    className="text-xs font-medium text-primary underline-offset-4 hover:underline disabled:text-muted-foreground"
+                  >
+                    {method.action.pending
+                      ? method.action.pendingLabel
+                      : method.action.label}
+                  </button>
+                </div>
               )}
-            </button>
+            </div>
           );
         })}
       </div>

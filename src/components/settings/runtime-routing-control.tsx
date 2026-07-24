@@ -25,6 +25,10 @@ import type {
   RoutingPolicyV1,
 } from "@/lib/settings/routing-policy";
 import type { RuntimeRoutingStatus } from "@/lib/settings/runtime-routing-status";
+import {
+  compareRuntimeAdditionalSpend,
+  normalizedCostEvidence,
+} from "@/lib/settings/runtime-cost-model";
 
 export interface RoutingSettingsView extends RoutingPolicyReadResult {
   preference: RoutingPreference;
@@ -51,8 +55,8 @@ const ROUTING_OPTIONS: Array<{
   },
   {
     value: "cost",
-    label: "Cost",
-    description: "Prefer known comparable model prices. Unknown pricing is never treated as free.",
+    label: "Additional spend",
+    description: "Use included-plan or customer-compute capacity before metered APIs.",
     icon: DollarSign,
   },
   {
@@ -63,7 +67,7 @@ const ROUTING_OPTIONS: Array<{
   },
   {
     value: "manual",
-    label: "Manual",
+    label: "Strict default",
     description: "Use one strict default runtime without automatic fallback.",
     icon: Hand,
   },
@@ -96,6 +100,17 @@ function orderedStatuses(
 
 function formatCostEvidence(value: number): string {
   return `$${(value / 1_000_000).toFixed(2)} combined input + output / 1M`;
+}
+
+function costEvidenceLabel(status: RuntimeRoutingStatus): string {
+  const evidence = normalizedCostEvidence(status);
+  if (
+    evidence.kind === "metered_api" &&
+    evidence.comparableCostPerMillionMicros !== null
+  ) {
+    return formatCostEvidence(evidence.comparableCostPerMillionMicros);
+  }
+  return evidence.label;
 }
 
 function runtimeIsReady(status: RuntimeRoutingStatus): boolean {
@@ -138,16 +153,7 @@ export function RuntimeRoutingControl({
   );
   const previewOrder = [...launchable].sort((left, right) => {
     if (preference !== "cost") return 0;
-    const leftKnown = left.comparableCostPerMillionMicros !== null;
-    const rightKnown = right.comparableCostPerMillionMicros !== null;
-    if (leftKnown !== rightKnown) return leftKnown ? -1 : 1;
-    if (leftKnown && rightKnown) {
-      return (
-        (left.comparableCostPerMillionMicros ?? 0) -
-        (right.comparableCostPerMillionMicros ?? 0)
-      );
-    }
-    return 0;
+    return compareRuntimeAdditionalSpend(left, right);
   });
 
   function toggleRuntime(runtimeId: AgentRuntimeId, selected: boolean) {
@@ -278,13 +284,68 @@ export function RuntimeRoutingControl({
                 ?.description
             }
           </p>
+          {preference !== "manual" && (
+            <div className="rounded-lg bg-[var(--surface-2)] px-3 py-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Resulting order for a general task
+                </p>
+                <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                  {dirty ? "Unsaved preview" : "Active policy"}
+                </span>
+              </div>
+              {policy.eligibleRuntimeIds.length === 0 ? (
+                <p className="mt-1 text-sm text-destructive" role="alert">
+                  No eligible runtimes. Automatic tasks will fail visibly.
+                </p>
+              ) : previewOrder.length === 0 ? (
+                <p className="mt-1 text-sm text-destructive" role="alert">
+                  No selected runtime is currently configured and healthy.
+                </p>
+              ) : (
+                <ol className="mt-2 space-y-1.5 text-sm">
+                  {previewOrder.map((status, index) => (
+                    <li key={status.runtimeId} className="flex min-w-0 gap-2">
+                      <span className="w-4 shrink-0 tabular-nums text-muted-foreground">
+                        {index + 1}.
+                      </span>
+                      <span className="min-w-0 flex-1 truncate font-medium">
+                        {status.label}
+                      </span>
+                      <span className="shrink-0 text-right text-xs text-muted-foreground">
+                        {preference === "cost"
+                          ? costEvidenceLabel(status)
+                          : "fallback priority"}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+              {previewOrder.length > 0 && (
+                <p className="mt-2 text-xs font-medium">
+                  {policy.automaticFallback
+                    ? "Fallback on · Relay may advance through this order."
+                    : "Fallback off · Relay will try only the first runtime."}
+                </p>
+              )}
+              <p className="mt-2 text-xs text-muted-foreground">
+                Readiness filters the base pool. Task profile, named runtime,
+                and capability requirements can change the final run order.
+              </p>
+              {preference === "cost" && (
+                <p className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                  Provider economics checked July 24, 2026
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="surface-panel min-w-0 rounded-xl border border-border p-3 sm:p-4">
           {preference === "manual" ? (
             <div className="space-y-3">
               <div>
-                <p className="text-sm font-semibold">Manual default</p>
+                  <p className="text-sm font-semibold">Strict default runtime</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Tasks without an explicit runtime use this target strictly.
                   Relay will not substitute another runtime.
@@ -330,7 +391,9 @@ export function RuntimeRoutingControl({
             <div className="space-y-3">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <p className="text-sm font-semibold">Eligible runtimes</p>
+                  <p className="text-sm font-semibold">
+                    Eligible runtimes and fallback priority
+                  </p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     Selected runtimes are considered in the saved order, then
                     filtered again for configuration, profile, capabilities,
@@ -350,56 +413,6 @@ export function RuntimeRoutingControl({
                   />
                   {refreshing ? "Checking" : "Refresh health"}
                 </Button>
-              </div>
-
-              <div className="rounded-lg bg-[var(--surface-2)] px-3 py-2.5">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  General-task preview
-                </p>
-                {policy.eligibleRuntimeIds.length === 0 ? (
-                  <p className="mt-1 text-sm text-destructive" role="alert">
-                    No eligible runtimes. Automatic tasks will fail visibly.
-                  </p>
-                ) : previewOrder.length === 0 ? (
-                  <p className="mt-1 text-sm text-destructive" role="alert">
-                    No selected runtime is currently configured and healthy.
-                  </p>
-                ) : (
-                  <ol className="mt-1 space-y-1 text-sm">
-                    {previewOrder.map((status, index) => (
-                      <li key={status.runtimeId} className="flex min-w-0 gap-2">
-                        <span className="w-4 shrink-0 tabular-nums text-muted-foreground">
-                          {index + 1}.
-                        </span>
-                        <span className="min-w-0 truncate font-medium">
-                          {status.label}
-                        </span>
-                        <span className="min-w-0 truncate text-xs text-muted-foreground">
-                          {preference === "cost" &&
-                          status.comparableCostPerMillionMicros !== null
-                            ? formatCostEvidence(
-                                status.comparableCostPerMillionMicros,
-                              )
-                            : preference === "cost"
-                              ? "cost unknown"
-                              : "pool order"}
-                        </span>
-                      </li>
-                    ))}
-                  </ol>
-                )}
-                {previewOrder.length > 0 && (
-                  <p className="mt-2 text-xs font-medium">
-                    {policy.automaticFallback
-                      ? "Fallback on: Relay may advance through this order."
-                      : "Fallback off: Relay will try only the first runtime."}
-                  </p>
-                )}
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Profile affinity, task-named runtimes, required capabilities,
-                  and current health can change the actual order. The run
-                  receipt records the final reason and every skip.
-                </p>
               </div>
 
               <div className="overflow-hidden rounded-lg border border-border">
@@ -485,7 +498,7 @@ export function RuntimeRoutingControl({
                   </span>
                   <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
                     Try the next healthy compatible runtime in this pool. Never
-                    applies to explicit or Manual targets.
+                    applies to explicit or Strict default targets.
                   </span>
                 </span>
               </Label>

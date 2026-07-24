@@ -102,7 +102,7 @@ describe("Codex session adoption", () => {
       method: "oauth",
     });
     expect(mockReadCodexAuthState).toHaveBeenCalledWith({
-      refreshToken: true,
+      refreshToken: false,
     });
   });
 
@@ -133,10 +133,47 @@ describe("Codex session adoption", () => {
     await expect(adoptExistingCodexSession()).rejects.toMatchObject({
       name: "CodexSessionAdoptionError",
       status: 400,
+      message: expect.stringContaining("rejected or could not refresh"),
     });
     expect(() => statSync(isolatedAuthPath)).toThrow();
     expect(readFileSync(globalAuthPath, "utf8")).toBe(sourceBytes);
     expect(mockClearOpenAIOAuthStatus).toHaveBeenCalled();
+    expect(mockSetOpenAIAuthSettings).not.toHaveBeenCalled();
+  });
+
+  it("names a Codex App Server verification failure and keeps API key mode", async () => {
+    writeUsableGlobalAuth();
+    mockReadCodexAuthState.mockRejectedValueOnce(
+      new Error("Codex app server exited before accepting connections (code=1)"),
+    );
+    const { adoptExistingCodexSession } = await import(
+      "../codex-session-adoption"
+    );
+
+    await expect(adoptExistingCodexSession()).rejects.toMatchObject({
+      name: "CodexSessionAdoptionError",
+      status: 500,
+      message: expect.stringContaining("Codex App Server could not start"),
+    });
+    expect(() => statSync(isolatedAuthPath)).toThrow();
+    expect(mockSetOpenAIAuthSettings).not.toHaveBeenCalled();
+  });
+
+  it("does not select ChatGPT when Codex reports no connected account", async () => {
+    writeUsableGlobalAuth();
+    mockReadCodexAuthState.mockResolvedValueOnce({
+      connected: false,
+      account: null,
+      rateLimits: null,
+    });
+    const { adoptExistingCodexSession } = await import(
+      "../codex-session-adoption"
+    );
+
+    await expect(adoptExistingCodexSession()).rejects.toThrow(
+      "did not report an authenticated ChatGPT account",
+    );
+    expect(mockSetOpenAIAuthSettings).not.toHaveBeenCalled();
   });
 
   it("refuses a credential file readable by other users", async () => {

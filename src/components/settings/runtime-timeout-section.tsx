@@ -65,104 +65,108 @@ export function RuntimeTimeoutSection() {
       <CardHeader>
         <CardTitle>Runtime</CardTitle>
         <CardDescription>
-          Configure runtime behavior for AI operations.
+          Bound how long and how far agent operations may run.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent>
         <TooltipProvider>
-          <FormSectionCard
-            icon={Timer}
-            title="SDK Timeout"
-            hint="Maximum seconds to wait for AI responses."
-          >
-            <div className="space-y-3 w-full">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Fast Response</span>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="font-medium tabular-nums cursor-help">
-                      {timeout} seconds
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-xs">
-                    Lower values return faster but may cut off complex reasoning.
-                    Higher values allow thorough analysis but increase wait time.
-                  </TooltipContent>
-                </Tooltip>
-                <span className="text-muted-foreground">Thorough Analysis</span>
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2">
+            <FormSectionCard
+              icon={Timer}
+              title="SDK timeout"
+              hint="Maximum wait for one AI response."
+              className="min-w-0 p-3"
+            >
+              <div className="w-full max-w-xl space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">10s</span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="font-medium tabular-nums">
+                        {timeout} seconds
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      Lower values may cut off complex reasoning; higher values
+                      wait longer.
+                    </TooltipContent>
+                  </Tooltip>
+                  <span className="text-muted-foreground">300s</span>
+                </div>
+                <div className="relative">
+                  <div
+                    className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-primary/10"
+                    style={{
+                      left: `${((30 - 10) / (300 - 10)) * 100}%`,
+                      width: `${((120 - 30) / (300 - 10)) * 100}%`,
+                    }}
+                  />
+                  <Slider
+                    value={[timeout]}
+                    min={10}
+                    max={300}
+                    step={5}
+                    disabled={saving}
+                    onValueChange={(value) => setTimeout_(value[0])}
+                    onValueCommit={(value) =>
+                      handleSave("sdkTimeoutSeconds", value[0])
+                    }
+                  />
+                </div>
+                <p className="text-center text-xs text-muted-foreground">
+                  Recommended 30–120s
+                </p>
               </div>
-              <div className="relative">
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-primary/10"
-                  style={{
-                    left: `${((30 - 10) / (300 - 10)) * 100}%`,
-                    width: `${((120 - 30) / (300 - 10)) * 100}%`,
-                  }}
-                />
-                <Slider
-                  value={[timeout]}
-                  min={10}
-                  max={300}
-                  step={5}
-                  disabled={saving}
-                  onValueChange={(value) => setTimeout_(value[0])}
-                  onValueCommit={(value) => handleSave("sdkTimeoutSeconds", value[0])}
-                />
-              </div>
-              <div className="flex justify-center">
-                <span className="text-xs text-muted-foreground">
-                  Recommended: 30–120s
-                </span>
-              </div>
-            </div>
-          </FormSectionCard>
+            </FormSectionCard>
 
-          <FormSectionCard
-            icon={RotateCcw}
-            title="Max Turns"
-            hint="Maximum number of agent turns per task execution."
-          >
-            <div className="space-y-3 w-full">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Quick Execution</span>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="font-medium tabular-nums cursor-help">
-                      {maxTurns} turns
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-xs">
-                    Fewer turns limit agent actions for simple tasks.
-                    More turns allow extended multi-step reasoning.
-                  </TooltipContent>
-                </Tooltip>
-                <span className="text-muted-foreground">Extended Reasoning</span>
+            <FormSectionCard
+              icon={RotateCcw}
+              title="Maximum turns"
+              hint="Maximum agent turns in one task."
+              className="min-w-0 p-3"
+            >
+              <div className="w-full max-w-xl space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">1</span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="font-medium tabular-nums">
+                        {maxTurns} turns
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      Fewer turns bound simple work; more turns permit longer
+                      multi-step execution.
+                    </TooltipContent>
+                  </Tooltip>
+                  <span className="text-muted-foreground">50</span>
+                </div>
+                <div className="relative">
+                  <div
+                    className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-primary/10"
+                    style={{
+                      left: `${((15 - 1) / (50 - 1)) * 100}%`,
+                      width: `${((40 - 15) / (50 - 1)) * 100}%`,
+                    }}
+                  />
+                  <Slider
+                    value={[maxTurns]}
+                    min={1}
+                    max={50}
+                    step={1}
+                    disabled={saving}
+                    onValueChange={(value) => setMaxTurns(value[0])}
+                    onValueCommit={(value) =>
+                      handleSave("maxTurns", value[0])
+                    }
+                  />
+                </div>
+                <p className="text-center text-xs text-muted-foreground">
+                  Recommended 15–40 turns
+                </p>
               </div>
-              <div className="relative">
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-primary/10"
-                  style={{
-                    left: `${((15 - 1) / (50 - 1)) * 100}%`,
-                    width: `${((40 - 15) / (50 - 1)) * 100}%`,
-                  }}
-                />
-                <Slider
-                  value={[maxTurns]}
-                  min={1}
-                  max={50}
-                  step={1}
-                  disabled={saving}
-                  onValueChange={(value) => setMaxTurns(value[0])}
-                  onValueCommit={(value) => handleSave("maxTurns", value[0])}
-                />
-              </div>
-              <div className="flex justify-center">
-                <span className="text-xs text-muted-foreground">
-                  Recommended: 15–40 turns
-                </span>
-              </div>
-            </div>
-          </FormSectionCard>
+            </FormSectionCard>
+          </div>
         </TooltipProvider>
       </CardContent>
     </Card>

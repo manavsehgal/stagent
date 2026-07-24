@@ -6,19 +6,14 @@ import { NextRequest } from "next/server";
 const {
   getRoutingSettings,
   getRuntimeRoutingStatuses,
-  getComparableRuntimeCost,
 } = vi.hoisted(() => ({
   getRoutingSettings: vi.fn(),
   getRuntimeRoutingStatuses: vi.fn(),
-  getComparableRuntimeCost: vi.fn(),
 }));
 
 vi.mock("@/lib/settings/routing", () => ({ getRoutingSettings }));
 vi.mock("@/lib/settings/runtime-routing-status", () => ({
   getRuntimeRoutingStatuses,
-}));
-vi.mock("@/lib/settings/runtime-routing-evidence", () => ({
-  getComparableRuntimeCost,
 }));
 vi.mock("@/lib/agents/task-dispatch", () => ({
   startTaskExecution: vi.fn(),
@@ -55,15 +50,31 @@ beforeEach(() => {
   vi.clearAllMocks();
   getRoutingSettings.mockResolvedValue(policy());
   getRuntimeRoutingStatuses.mockResolvedValue([
-    { runtimeId: "ollama", ready: true },
-    { runtimeId: "openai-direct", ready: true },
+    {
+      runtimeId: "ollama",
+      ready: true,
+      comparableCostPerMillionMicros: null,
+      costEvidence: {
+        kind: "local_compute",
+        label: "$0 provider charge · uses your compute",
+        comparableCostPerMillionMicros: null,
+        sourceAsOf: "2026-07-24",
+      },
+    },
+    {
+      runtimeId: "openai-direct",
+      ready: true,
+      comparableCostPerMillionMicros: 2_000_000,
+      costEvidence: {
+        kind: "metered_api",
+        label: "Metered API",
+        comparableCostPerMillionMicros: 2_000_000,
+        sourceAsOf: "2026-07-24",
+      },
+    },
     { runtimeId: "anthropic-direct", ready: true },
     { runtimeId: "lmstudio", ready: false },
   ]);
-  getComparableRuntimeCost.mockImplementation(
-    async ({ runtimeId }: { runtimeId: string }) =>
-      runtimeId === "openai-direct" ? 2_000_000 : null,
-  );
 });
 
 describe("POST /api/runtimes/suggest", () => {
@@ -71,12 +82,11 @@ describe("POST /api/runtimes/suggest", () => {
     const response = await POST(request({ title: "Summarize this report" }));
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({
-      runtimeId: "openai-direct",
-      orderedRuntimeIds: ["openai-direct", "ollama"],
+      runtimeId: "ollama",
+      orderedRuntimeIds: ["ollama", "openai-direct"],
       evidence: "known-cost",
       advisory: true,
     });
-    expect(getComparableRuntimeCost).toHaveBeenCalledTimes(2);
   });
 
   it("uses the strict Manual default without consulting the automatic pool", async () => {

@@ -7,6 +7,10 @@ import {
 } from "./runtime/catalog";
 import type { RoutingPreference } from "@/lib/constants/settings";
 import { resumeTaskExecution, startTaskExecution } from "./task-dispatch";
+import {
+  compareRuntimeAdditionalSpend,
+  type RuntimeCostEvidence,
+} from "@/lib/settings/runtime-cost-model";
 
 const RUNTIME_NAME_SIGNALS: Record<AgentRuntimeId, string[]> = {
   "claude-code": ["claude code"],
@@ -31,6 +35,7 @@ export interface RuntimeRoutingCandidate {
   runtimeId: AgentRuntimeId;
   /** Comparable combined input + output price in micros per million tokens. */
   comparableCostPerMillionMicros: number | null;
+  costEvidence?: RuntimeCostEvidence;
 }
 
 function normalizeCandidates(
@@ -105,24 +110,25 @@ export function suggestRuntime(
     const ordered = candidates
       .map((candidate, index) => ({ ...candidate, index }))
       .sort((left, right) => {
-        const leftKnown = left.comparableCostPerMillionMicros !== null;
-        const rightKnown = right.comparableCostPerMillionMicros !== null;
-        if (leftKnown !== rightKnown) return leftKnown ? -1 : 1;
-        if (leftKnown && rightKnown) {
-          const difference =
-            (left.comparableCostPerMillionMicros ?? 0) -
-            (right.comparableCostPerMillionMicros ?? 0);
-          if (difference !== 0) return difference;
-        }
+        const difference = compareRuntimeAdditionalSpend(left, right);
+        if (difference !== 0) return difference;
         return left.index - right.index;
       });
     const best = ordered[0];
     const orderedRuntimeIds = ordered.map((candidate) => candidate.runtimeId);
-    if (best.comparableCostPerMillionMicros !== null) {
+    if (
+      best.costEvidence?.kind !== "unknown" ||
+      best.comparableCostPerMillionMicros !== null
+    ) {
       return {
         runtimeId: best.runtimeId,
         orderedRuntimeIds,
-        reason: "Lowest comparable configured-model token price among eligible runtimes",
+        reason:
+          best.costEvidence?.kind === "metered_api" ||
+          (!best.costEvidence &&
+            best.comparableCostPerMillionMicros !== null)
+            ? "Lowest metered configured-model token price after zero-additional-provider-spend runtimes"
+            : "Lowest additional provider spend among eligible runtimes",
         evidence: "known-cost",
       };
     }

@@ -47,6 +47,38 @@ function statuses() {
         : runtimeId === "openai-direct"
           ? 40_000_000
           : null,
+    costEvidence:
+      runtimeId === "claude-code" ||
+      runtimeId === "openai-codex-app-server"
+        ? {
+            kind: "included_plan" as const,
+            label: "Included in plan · usage limits apply",
+            comparableCostPerMillionMicros: null,
+            sourceAsOf: "2026-07-24",
+          }
+        : runtimeId === "ollama" || runtimeId === "lmstudio"
+          ? {
+              kind: "local_compute" as const,
+              label: "$0 provider charge · uses your compute",
+              comparableCostPerMillionMicros: null,
+              sourceAsOf: "2026-07-24",
+            }
+          : runtimeId === "anthropic-direct" || runtimeId === "openai-direct"
+            ? {
+                kind: "metered_api" as const,
+                label: "Metered API",
+                comparableCostPerMillionMicros:
+                  runtimeId === "anthropic-direct"
+                    ? 18_000_000
+                    : 40_000_000,
+                sourceAsOf: "2026-07-24",
+              }
+            : {
+                kind: "unknown" as const,
+                label: "Gateway economics unknown",
+                comparableCostPerMillionMicros: null,
+                sourceAsOf: null,
+              },
     capabilitySummary:
       runtimeId === "claude-code" ? ["Filesystem", "Bash"] : [],
     capabilityLimits:
@@ -124,7 +156,7 @@ describe("RuntimeRoutingControl", () => {
     expect(screen.getAllByText(/No filesystem tools/).length).toBeGreaterThan(0);
   });
 
-  it("orders known cost evidence before unknown pricing without treating unknown as free", async () => {
+  it("orders included-plan and local capacity before metered APIs", async () => {
     const user = userEvent.setup();
     render(
       <RuntimeRoutingControl
@@ -134,13 +166,19 @@ describe("RuntimeRoutingControl", () => {
         onRefreshHealth={onRefreshHealth}
       />,
     );
-    await user.click(screen.getByRole("radio", { name: "Cost" }));
-    const preview = screen.getByText("General-task preview").parentElement;
+    await user.click(
+      screen.getByRole("radio", { name: "Additional spend" }),
+    );
+    const preview = screen.getByText("Resulting order for a general task")
+      .parentElement?.parentElement;
     if (!preview) throw new Error("preview missing");
     const items = within(preview).getAllByRole("listitem");
-    expect(items[0]).toHaveTextContent("Anthropic Direct API");
-    expect(items[1]).toHaveTextContent("OpenAI Direct API");
-    expect(items[2]).toHaveTextContent("cost unknown");
+    expect(items[0]).toHaveTextContent("Claude Code");
+    expect(items[0]).toHaveTextContent("Included in plan");
+    expect(items[1]).toHaveTextContent("OpenAI Codex App Server");
+    expect(items[2]).toHaveTextContent("Ollama");
+    expect(items[2]).toHaveTextContent("$0 provider charge");
+    expect(items[3]).toHaveTextContent("Anthropic Direct API");
   });
 
   it("places the general-task preview before the eligible runtime list", () => {
@@ -153,7 +191,8 @@ describe("RuntimeRoutingControl", () => {
       />,
     );
 
-    const preview = screen.getByText("General-task preview").parentElement;
+    const preview = screen.getByText("Resulting order for a general task")
+      .parentElement?.parentElement;
     const firstRuntime = screen.getByLabelText("Exclude Claude Code");
     expect(
       preview?.compareDocumentPosition(firstRuntime) &
@@ -206,7 +245,9 @@ describe("RuntimeRoutingControl", () => {
         onRefreshHealth={onRefreshHealth}
       />,
     );
-    await user.click(screen.getByRole("radio", { name: "Manual" }));
+    await user.click(
+      screen.getByRole("radio", { name: "Strict default" }),
+    );
     await user.selectOptions(
       screen.getByLabelText("Default runtime"),
       "lmstudio",

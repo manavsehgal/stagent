@@ -115,7 +115,7 @@ describe("openai auth settings", () => {
     expect(result.rateLimits?.primary?.usedPercent).toBe(25);
   });
 
-  it("selects ChatGPT for a usable global session without calling it connected", async () => {
+  it("keeps an inactive detected ChatGPT session unselected", async () => {
     writeFileSync(
       globalAuthPath,
       JSON.stringify({
@@ -128,17 +128,17 @@ describe("openai auth settings", () => {
     const { getOpenAIAuthSettings } = await import("../openai-auth");
     const result = await getOpenAIAuthSettings();
 
-    expect(result.method).toBe("oauth");
+    expect(result.method).toBe("api_key");
     expect(result.oauthConnected).toBe(false);
     expect(result.existingSessionAvailable).toBe(true);
     expect(result.existingSessionAdoptable).toBe(true);
   });
 
-  it("detects a keyring-backed global Codex login without offering unsafe adoption", async () => {
+  it("detects a keyring-backed global Codex login without selecting or offering unsafe adoption", async () => {
     mockProbeCodexGlobalAuth.mockResolvedValue({ status: "connected" });
     const { getOpenAIAuthSettings } = await import("../openai-auth");
     const result = await getOpenAIAuthSettings();
-    expect(result.method).toBe("oauth");
+    expect(result.method).toBe("api_key");
     expect(result.oauthConnected).toBe(false);
     expect(result.existingSessionAvailable).toBe(true);
     expect(result.existingSessionAdoptable).toBe(false);

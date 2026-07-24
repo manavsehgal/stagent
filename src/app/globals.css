@@ -461,6 +461,19 @@
   border: 1px solid var(--border-subtle);
 }
 
+/* Settings density is route-scoped: compact card chrome and responsive grids
+   preserve every control while using wide screens as an operational surface. */
+.settings-density [data-slot="card-header"] {
+  gap: var(--space-1);
+  padding: var(--space-4);
+}
+
+.settings-density [data-slot="card-content"] {
+  padding-right: var(--space-4);
+  padding-bottom: var(--space-4);
+  padding-left: var(--space-4);
+}
+
 /* Fade-to-transparent mask for progressive disclosure */
 .mask-fade-bottom {
   mask-image: linear-gradient(to bottom, black 50%, transparent 100%);

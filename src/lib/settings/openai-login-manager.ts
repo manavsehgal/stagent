@@ -156,7 +156,7 @@ export async function startOpenAIChatGPTLogin(): Promise<OpenAILoginState> {
     if (params?.success) {
       void (async () => {
         try {
-          const current = await readCodexAuthState({ refreshToken: true });
+          const current = await readCodexAuthState({ refreshToken: false });
           updateState({
             phase: "connected",
             loginId: completedLoginId ?? null,

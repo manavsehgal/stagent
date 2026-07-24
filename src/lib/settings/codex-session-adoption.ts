@@ -22,6 +22,30 @@ export class CodexSessionAdoptionError extends Error {
   }
 }
 
+function classifyVerificationFailure(error: unknown): CodexSessionAdoptionError {
+  const message = error instanceof Error ? error.message : String(error);
+  if (
+    /executable|app server exited|accepting connections|socket (?:error|closed)/i.test(
+      message,
+    )
+  ) {
+    return new CodexSessionAdoptionError(
+      "Relay copied the existing Codex sign-in, but Codex App Server could not start for verification. The isolated copy was removed. Repair or update Codex, then try again.",
+      500,
+    );
+  }
+  if (/token|refresh|unauthori[sz]ed|forbidden|expired|rejected/i.test(message)) {
+    return new CodexSessionAdoptionError(
+      "Relay copied the existing Codex sign-in, but Codex rejected or could not refresh it. The isolated copy was removed. Sign in with ChatGPT again.",
+      400,
+    );
+  }
+  return new CodexSessionAdoptionError(
+    "Relay copied the existing Codex sign-in, but Codex could not verify the account. The isolated copy was removed. Sign in with ChatGPT instead or try again.",
+    400,
+  );
+}
+
 function currentUid(): number | null {
   return typeof process.getuid === "function" ? process.getuid() : null;
 }
@@ -115,11 +139,21 @@ export async function adoptExistingCodexSession() {
       mode: 0o600,
     });
     created = true;
-    await setOpenAIAuthSettings({ method: "oauth" });
-    const state = await readCodexAuthState({ refreshToken: true });
+    // Verify the copied account without forcing an OAuth refresh. Codex's
+    // documented account/read API treats refreshToken=true as a forced token
+    // rotation; a valid device session can therefore be rejected here while
+    // account/read(false) and normal Codex execution remain authenticated.
+    // The App Server still owns routine refreshes after adoption.
+    const state = await readCodexAuthState({ refreshToken: false });
     if (!state.connected) {
-      throw new Error("Codex did not accept the imported ChatGPT session.");
+      throw new CodexSessionAdoptionError(
+        state.account
+          ? "Relay copied the existing Codex sign-in, but Codex reported a non-ChatGPT account. The isolated copy was removed."
+          : "Relay copied the existing Codex sign-in, but Codex did not report an authenticated ChatGPT account. The isolated copy was removed.",
+        400,
+      );
     }
+    await setOpenAIAuthSettings({ method: "oauth" });
     return state;
   } catch (error) {
     if (created) {
@@ -138,9 +172,6 @@ export async function adoptExistingCodexSession() {
       );
     }
     if (error instanceof CodexSessionAdoptionError) throw error;
-    throw new CodexSessionAdoptionError(
-      "Relay copied the existing Codex sign-in but could not verify it. The isolated copy was removed. Sign in with ChatGPT instead or try again.",
-      400,
-    );
+    throw classifyVerificationFailure(error);
   }
 }

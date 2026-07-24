@@ -151,9 +151,9 @@ export async function getOpenAIAuthSettings(): Promise<OpenAIAuthSettings> {
     (existingSessionAdoptable || globalCliAuth.status === "connected");
   const method =
     storedMethod ??
-    (oauthConnected || existingSessionAvailable
+    (oauthConnected
       ? "oauth"
-      : hasDbKey || hasEnvKey
+      : hasDbKey || hasEnvKey || existingSessionAvailable
         ? "api_key"
         : "oauth");
 

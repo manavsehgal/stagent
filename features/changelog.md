@@ -1,5 +1,41 @@
 # Feature Changelog
 
+## 2026-07-24
+
+### Completed
+
+- `provider-auth-adoption-clarity` (G-139) — provider setup now distinguishes
+  API keys, this device's account, and this Relay's isolated account. Detected
+  Codex auth remains inactive until one explicit adoption action succeeds.
+  Relay stopped forcing OAuth rotation during routine App Server reads, so the
+  live isolated adoption now selects ChatGPT, renders **Connected via
+  ChatGPT**, and verifies Codex healthy; named failures still roll back only
+  the isolated copy.
+- `runtime-routing-additional-spend` (G-140) — the former Cost objective is now
+  **Additional spend** and uses one server/client accounting model: local
+  compute and included plans precede metered APIs, known metered prices order
+  their own class, and unknown economics never masquerade as free. **Manual**
+  is now **Strict default**, and the UI separates eligible fallback priority
+  from the resulting general-task order and unsaved preview.
+- `settings-compact-progressive-layout` (G-141) — provider modes reveal only
+  relevant controls; Chat and Runtime controls form bounded responsive pairs;
+  independent Settings sections use wide-screen columns with compact card
+  chrome. Final browser checks passed at 1440, 768, and 390 px, including zero
+  horizontal Settings overflow.
+
+### Verification
+
+- The focused 224-test Settings/auth/runtime set passed across 39 files. The
+  full suite then passed all 4,010 runnable regressions across 549 files, with
+  one intentional skip.
+- TypeScript and the production build passed. The build retained only its
+  existing broad dynamic-file trace warnings.
+- The deterministic real-task runtime graph completed task, workflow,
+  schedule, Chat, Ollama, LiteLLM, and LM Studio lanes.
+- Live clean-data-dir browser proof at 1440/1024/768/390 px confirmed isolated Codex adoption,
+  **Connected via ChatGPT**, healthy Codex runtime status, progressive provider
+  UI, and responsive Settings layout.
+
 ## 2026-07-23
 
 ### Completed

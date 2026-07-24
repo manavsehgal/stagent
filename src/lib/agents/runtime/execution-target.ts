@@ -12,7 +12,12 @@ import {
 import { testRuntimeConnection } from "./index";
 import { getRoutingSettings } from "@/lib/settings/routing";
 import type { RoutingPreference } from "@/lib/constants/settings";
-import { getRuntimeSetupStates, listConfiguredRuntimeIds } from "@/lib/settings/runtime-setup";
+import {
+  getRuntimeSetupStates,
+  listConfiguredRuntimeIds,
+  type RuntimeSetupState,
+} from "@/lib/settings/runtime-setup";
+import type { RuntimeCostEvidence } from "@/lib/settings/runtime-cost-model";
 import { CHAT_MODELS, DEFAULT_CHAT_MODEL, getRuntimeForModel } from "@/lib/chat/types";
 import { getSetting } from "@/lib/settings/helpers";
 import { SETTINGS_KEYS } from "@/lib/constants/settings";
@@ -404,16 +409,18 @@ async function checkRuntimeAvailability(
   }
 }
 
-async function getComparableRoutingCost(
+async function getRoutingCostEvidence(
   runtimeId: AgentRuntimeId,
+  setup: RuntimeSetupState,
   profileId?: string | null,
-): Promise<number | null> {
-  const { getComparableRuntimeCost } = await import(
+): Promise<RuntimeCostEvidence> {
+  const { getRuntimeCostEvidence } = await import(
     "@/lib/settings/runtime-routing-evidence"
   );
-  return getComparableRuntimeCost({
+  return getRuntimeCostEvidence({
     runtimeId,
     modelId: getProfileModelPin(profileId, runtimeId),
+    setup,
   });
 }
 
@@ -606,13 +613,19 @@ export async function resolveTaskExecutionTarget(input: {
   }
 
   const routingCandidates = await Promise.all(
-    launchableCandidates.map(async (runtimeId) => ({
-      runtimeId,
-      comparableCostPerMillionMicros: await getComparableRoutingCost(
+    launchableCandidates.map(async (runtimeId) => {
+      const costEvidence = await getRoutingCostEvidence(
         runtimeId,
+        states[runtimeId],
         input.profileId,
-      ),
-    })),
+      );
+      return {
+        runtimeId,
+        comparableCostPerMillionMicros:
+          costEvidence.comparableCostPerMillionMicros,
+        costEvidence,
+      };
+    }),
   );
   const suggestion = suggestRuntime(
     input.title,

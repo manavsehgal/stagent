@@ -153,14 +153,15 @@ export function ChatSettingsSection() {
       <CardHeader>
         <CardTitle>Chat</CardTitle>
         <CardDescription>
-          Configure defaults for the chat conversation interface.
+          Choose how new conversations select a model.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2">
         <FormSectionCard
           icon={Compass}
           title="Model preference"
-          hint="What matters most to you? Drives the recommended default and re-resolves sensibly when new models are released."
+          hint="Guides recommendations as available models change."
+          className="min-w-0 p-3"
         >
           <Select
             value={modelPreference}
@@ -168,7 +169,7 @@ export function ChatSettingsSection() {
               handlePreferenceChange(v as ModelPreference | "none")
             }
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="min-w-0 w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -184,10 +185,11 @@ export function ChatSettingsSection() {
         <FormSectionCard
           icon={MessageCircle}
           title="Default Model"
-          hint="Model used for new chat conversations. Can be overridden per conversation."
+          hint="Used for new chats; each conversation can override it."
+          className="min-w-0 p-3"
         >
           <Select value={defaultModel} onValueChange={handleModelChange}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="min-w-0 w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

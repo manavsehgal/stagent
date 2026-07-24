@@ -3,7 +3,6 @@ import { z } from "zod";
 import { suggestRuntime } from "@/lib/agents/router";
 import { getRoutingSettings } from "@/lib/settings/routing";
 import type { AgentRuntimeId } from "@/lib/agents/runtime/catalog";
-import { getComparableRuntimeCost } from "@/lib/settings/runtime-routing-evidence";
 import { getRuntimeRoutingStatuses } from "@/lib/settings/runtime-routing-status";
 
 const suggestionRequestSchema = z
@@ -49,14 +48,17 @@ export async function POST(req: NextRequest) {
       { status: 409 },
     );
   }
-  const candidates = await Promise.all(
-    availableRuntimeIds.map(async (runtimeId) => ({
+  const candidates = availableRuntimeIds.map((runtimeId) => {
+    const status = runtimeStatuses.find(
+      (candidate) => candidate.runtimeId === runtimeId,
+    );
+    return {
       runtimeId,
-      comparableCostPerMillionMicros: await getComparableRuntimeCost({
-        runtimeId,
-      }),
-    })),
-  );
+      comparableCostPerMillionMicros:
+        status?.comparableCostPerMillionMicros ?? null,
+      costEvidence: status?.costEvidence,
+    };
+  });
 
   const suggestion = suggestRuntime(
     title,

@@ -186,7 +186,7 @@ function ProviderRow({
         onClick={toggle}
         data-interactive-surface=""
         data-interactive-outline="preserve"
-        className="interactive-list-item flex w-full items-center gap-3 rounded-xl p-4 text-left"
+        className="interactive-list-item flex w-full items-center gap-3 rounded-xl p-3 text-left"
       >
         <div
           className={`h-2.5 w-2.5 shrink-0 rounded-full ${
@@ -217,7 +217,7 @@ function ProviderRow({
       </button>
 
       {open && (
-        <div className="px-4 pb-4 space-y-4">
+        <div className="space-y-3 px-3 pb-3">
           <Separator />
           {children}
 
@@ -293,6 +293,8 @@ export function ProvidersAndRuntimesSection() {
   const [anthropicOpen, setAnthropicOpen] = useState(false);
   const [openAIOpen, setOpenAIOpen] = useState(false);
   const [openAILoginState, setOpenAILoginState] = useState<OpenAILoginState | null>(null);
+  const [adoptingCodex, setAdoptingCodex] = useState(false);
+  const [codexAdoptionError, setCodexAdoptionError] = useState<string | null>(null);
 
   const fetchData = useCallback(async (
     refreshRuntimeHealth = false,
@@ -419,6 +421,7 @@ export function ProvidersAndRuntimesSection() {
   }
 
   async function handleOpenAIMethodChange(method: AuthMethod) {
+    setCodexAdoptionError(null);
     const res = await fetch("/api/settings/openai", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -426,6 +429,35 @@ export function ProvidersAndRuntimesSection() {
     });
     if (res.ok) {
       await fetchData();
+    }
+  }
+
+  async function handleAdoptExistingCodexSession() {
+    setAdoptingCodex(true);
+    setCodexAdoptionError(null);
+    try {
+      const response = await fetch("/api/settings/openai/adopt", {
+        method: "POST",
+      });
+      const payload = (await response.json()) as {
+        connected?: boolean;
+        error?: string;
+      };
+      if (!response.ok || payload.connected !== true) {
+        throw new Error(
+          payload.error ?? "Relay could not use the existing Codex sign-in.",
+        );
+      }
+      setOpenAIOpen(true);
+      await fetchData(true);
+    } catch (adoptionError) {
+      setCodexAdoptionError(
+        adoptionError instanceof Error
+          ? adoptionError.message
+          : "Relay could not use the existing Codex sign-in.",
+      );
+    } finally {
+      setAdoptingCodex(false);
     }
   }
 
@@ -459,7 +491,7 @@ export function ProvidersAndRuntimesSection() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Network className="h-5 w-5" />
-            Cloud providers &amp; task routing
+            Anthropic, OpenAI &amp; task routing
           </CardTitle>
           <CardDescription>Loading provider configuration...</CardDescription>
         </CardHeader>
@@ -476,7 +508,7 @@ export function ProvidersAndRuntimesSection() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
-            Cloud providers &amp; task routing
+            Anthropic, OpenAI &amp; task routing
           </CardTitle>
           <CardDescription>
             {error ?? "Failed to load provider configuration."}
@@ -525,7 +557,7 @@ export function ProvidersAndRuntimesSection() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Network className="h-5 w-5" />
-          Cloud providers &amp; task routing
+          Anthropic, OpenAI &amp; task routing
         </CardTitle>
         <CardDescription>
           {noneReady
@@ -554,14 +586,37 @@ export function ProvidersAndRuntimesSection() {
           <AuthMethodSelector
             value={providers.anthropic.authMethod ?? "api_key"}
             onChange={handleAnthropicMethodChange}
+            label="Use"
+            options={[
+              {
+                id: "api_key",
+                icon: Zap,
+                title: "API Key",
+                description: "API key · Anthropic Direct API",
+              },
+              {
+                id: "oauth",
+                icon: Crown,
+                title: "Claude Max/Pro",
+                description: "This device's account · Claude Code",
+              },
+            ]}
           />
 
           {(providers.anthropic.authMethod ?? "api_key") === "api_key" && (
-            <ApiKeyForm
-              hasKey={providers.anthropic.hasKey}
-              onSave={handleAnthropicSaveKey}
-              onTest={handleAnthropicTest}
-            />
+            <div className="space-y-2">
+              <ApiKeyForm
+                hasKey={providers.anthropic.hasKey}
+                onSave={handleAnthropicSaveKey}
+                onTest={handleAnthropicTest}
+              />
+              {providers.anthropic.apiKeySource === "env" && (
+                <p className="text-xs text-muted-foreground">
+                  Anthropic Direct API will use the key from{" "}
+                  <code>ANTHROPIC_API_KEY</code>.
+                </p>
+              )}
+            </div>
           )}
 
           {(providers.anthropic.authMethod ?? "api_key") === "oauth" && (
@@ -574,11 +629,6 @@ export function ProvidersAndRuntimesSection() {
             </div>
           )}
 
-          {providers.anthropic.apiKeySource === "env" && (
-            <p className="text-xs text-muted-foreground">
-              Currently using API key from environment variable (ANTHROPIC_API_KEY).
-            </p>
-          )}
         </ProviderRow>
 
         {/* OpenAI provider — controlled open state */}
@@ -599,22 +649,54 @@ export function ProvidersAndRuntimesSection() {
           <AuthMethodSelector
             value={openAIProvider.authMethod ?? "api_key"}
             onChange={handleOpenAIMethodChange}
-            label="Codex App Server Authentication"
+            label="Use for Codex App Server"
             options={[
               {
                 id: "api_key",
                 icon: Zap,
                 title: "API Key",
-                description: "Use an OpenAI API key for Codex App Server",
+                description: "API key · Direct API and Codex App Server",
               },
               {
                 id: "oauth",
                 icon: Crown,
                 title: "ChatGPT",
-                description: "Use your ChatGPT plan with browser sign-in",
+                description: "This Relay's isolated account",
+                status:
+                  !openAIProvider.oauthConnected &&
+                  openAIProvider.existingSessionAvailable
+                    ? "Detected — activation required"
+                    : undefined,
+                action:
+                  !openAIProvider.oauthConnected &&
+                  openAIProvider.existingSessionAdoptable
+                    ? {
+                        label: "Use existing Codex sign-in",
+                        pendingLabel: "Verifying existing sign-in…",
+                        pending: adoptingCodex,
+                        onClick: () =>
+                          void handleAdoptExistingCodexSession(),
+                      }
+                    : undefined,
               },
             ]}
           />
+
+          {codexAdoptionError && (
+            <div
+              role="alert"
+              className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+            >
+              <p>{codexAdoptionError}</p>
+              <button
+                type="button"
+                className="mt-2 font-medium underline underline-offset-4"
+                onClick={() => void handleOpenAIMethodChange("oauth")}
+              >
+                Sign in with another ChatGPT account
+              </button>
+            </div>
+          )}
 
           {(openAIProvider.authMethod ?? "api_key") === "oauth" ? (
             <OpenAIChatGPTAuthControl
@@ -643,6 +725,7 @@ export function ProvidersAndRuntimesSection() {
                 await fetchData();
               }}
               onLoginStateChange={setOpenAILoginState}
+              showExistingSessionPrompt={false}
             />
           ) : (
             <p className="text-sm text-muted-foreground">

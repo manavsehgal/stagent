@@ -28,6 +28,7 @@ interface OpenAIChatGPTAuthControlProps {
   initialLoginState: OpenAILoginState;
   onChanged: () => Promise<void>;
   onLoginStateChange?: (state: OpenAILoginState) => void;
+  showExistingSessionPrompt?: boolean;
 }
 
 function formatResetAt(value: number | null | undefined) {
@@ -119,6 +120,7 @@ export function OpenAIChatGPTAuthControl({
   initialLoginState,
   onChanged,
   onLoginStateChange,
+  showExistingSessionPrompt = true,
 }: OpenAIChatGPTAuthControlProps) {
   const [loginState, setLoginState] = useState<OpenAILoginState>(initialLoginState);
   const [testResult, setTestResult] = useState<RuntimeConnectionResult | null>(null);
@@ -279,7 +281,7 @@ export function OpenAIChatGPTAuthControl({
         in Orionfold Relay&apos;s isolated Codex home so it does not touch your normal `~/.codex` login.
       </p>
 
-      {!connected && existingSessionAvailable && (
+      {showExistingSessionPrompt && !connected && existingSessionAvailable && (
         <div className="surface-card-muted rounded-lg border p-3">
           <div className="flex items-start gap-2">
             <Import

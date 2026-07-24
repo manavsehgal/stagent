@@ -45,6 +45,35 @@ function routingStatuses() {
     modelId: runtimeId === "ollama" ? "qwen3:8b" : `${runtimeId}-model`,
     comparableCostPerMillionMicros:
       runtimeId === "anthropic-direct" ? 18_000_000 : null,
+    costEvidence:
+      runtimeId === "claude-code" ||
+      runtimeId === "openai-codex-app-server"
+        ? {
+            kind: "included_plan",
+            label: "Included in plan · usage limits apply",
+            comparableCostPerMillionMicros: null,
+            sourceAsOf: "2026-07-24",
+          }
+        : runtimeId === "ollama" || runtimeId === "lmstudio"
+          ? {
+              kind: "local_compute",
+              label: "$0 provider charge · uses your compute",
+              comparableCostPerMillionMicros: null,
+              sourceAsOf: "2026-07-24",
+            }
+          : runtimeId === "anthropic-direct"
+            ? {
+                kind: "metered_api",
+                label: "Metered API",
+                comparableCostPerMillionMicros: 18_000_000,
+                sourceAsOf: "2026-07-24",
+              }
+            : {
+                kind: "unknown",
+                label: "Economics unknown",
+                comparableCostPerMillionMicros: null,
+                sourceAsOf: null,
+              },
     capabilitySummary:
       runtimeId === "claude-code" ? ["Filesystem", "Bash"] : [],
     capabilityLimits:
@@ -283,7 +312,7 @@ describe("providers and runtimes section", () => {
     render(<ProvidersAndRuntimesSection />);
 
     expect(
-      await screen.findByText("Existing Codex sign-in found"),
+      await screen.findByText("Detected — activation required"),
     ).toBeInTheDocument();
     await user.click(
       screen.getByRole("button", { name: "Use existing Codex sign-in" }),
@@ -300,7 +329,7 @@ describe("providers and runtimes section", () => {
       expect(
         calls.filter(
           (call) =>
-            call.url === "/api/settings/providers" &&
+            call.url.startsWith("/api/settings/providers") &&
             call.method === "GET",
         ).length,
       ).toBeGreaterThan(1);
@@ -382,7 +411,9 @@ describe("providers and runtimes section", () => {
   it("saves routing policy without mutating provider or Chat configuration", async () => {
     const user = userEvent.setup();
     render(<ProvidersAndRuntimesSection />);
-    await user.click(await screen.findByRole("radio", { name: "Cost" }));
+    await user.click(
+      await screen.findByRole("radio", { name: "Additional spend" }),
+    );
     const save = screen.getByRole("button", { name: "Save routing" });
     await waitFor(() => expect(save).toBeEnabled());
     await user.click(save);
@@ -431,7 +462,7 @@ describe("providers and runtimes section", () => {
 
   it("refreshes routing readiness when a local provider changes", async () => {
     render(<ProvidersAndRuntimesSection />);
-    await screen.findByText("Cloud providers & task routing");
+    await screen.findByText("Anthropic, OpenAI & task routing");
 
     window.dispatchEvent(
       new CustomEvent("relay:runtime-readiness-changed"),
