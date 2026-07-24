@@ -68,8 +68,8 @@ const TEST_STATUS_ICONS: Record<string, typeof CheckCircle2> = {
 };
 
 const TEST_STATUS_COLORS: Record<string, string> = {
-  ok: "text-green-600",
-  failed: "text-red-600",
+  ok: "text-status-completed",
+  failed: "text-status-failed",
   untested: "text-muted-foreground",
 };
 
@@ -254,8 +254,8 @@ export function ChannelsSection() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex min-w-0 flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <CardTitle className="flex items-center gap-2">
               <Send className="h-5 w-5" />
               Delivery Channels
@@ -424,14 +424,17 @@ export function ChannelsSection() {
               return (
                 <div
                   key={ch.id}
-                  className="rounded-lg border p-3 space-y-2"
+                  data-channel-row=""
+                  className="min-w-0 space-y-2 rounded-lg border p-3"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Icon className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{ch.name}</span>
+                  <div className="flex min-w-0 flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex min-w-0 items-start gap-3">
+                      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                      <div className="min-w-0">
+                        <div className="flex min-w-0 flex-wrap items-center gap-2">
+                          <span className="min-w-0 break-words text-sm font-medium">
+                            {ch.name}
+                          </span>
                           <Badge variant="outline" className="text-xs capitalize">
                             {ch.channelType}
                           </Badge>
@@ -443,9 +446,9 @@ export function ChannelsSection() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 sm:shrink-0 sm:justify-end">
                       {/* Toggles */}
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-3">
                         {ch.channelType !== "webhook" && (
                           <div className="flex items-center gap-1.5">
                             <Label
@@ -475,9 +478,9 @@ export function ChannelsSection() {
                           />
                         </div>
                       </div>
-                      <div className="h-4 w-px bg-border" />
+                      <div className="hidden h-4 w-px bg-border sm:block" />
                       {/* Actions */}
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <Button
                           variant="outline"
                           size="sm"
@@ -501,6 +504,7 @@ export function ChannelsSection() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDelete(ch.id)}
+                          aria-label={`Delete ${ch.name}`}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -508,9 +512,14 @@ export function ChannelsSection() {
                     </div>
                   </div>
                   {ch.direction === "bidirectional" && (
-                    <div className="pl-7 text-xs text-muted-foreground">
-                      <span className="font-medium">Webhook URL:</span>{" "}
-                      <code className="bg-muted px-1 py-0.5 rounded text-[11px] select-all">
+                    <div className="min-w-0 text-xs text-muted-foreground sm:pl-7">
+                      <span className="font-medium">Webhook URL:</span>
+                      <code
+                        className="mt-1 block max-w-full overflow-x-auto whitespace-nowrap rounded bg-muted px-1 py-0.5 text-[11px] select-all"
+                        data-channel-inbound-url
+                        aria-label={`Inbound URL for ${ch.name}`}
+                        tabIndex={0}
+                      >
                         {getWebhookUrl(ch)}
                       </code>
                     </div>

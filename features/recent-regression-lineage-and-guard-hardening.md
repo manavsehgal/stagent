@@ -330,11 +330,11 @@ Each failure was observed before its correction and now has a named semantic
 receipt.
 
 Residual risk is explicit: visual density remains partly a product-taste
-judgment, historic screenshots cannot isolate one exact commit for every
-responsive change, and the full Settings page still contains lower-section
-mobile overflow already owned by G-024. G-142 protects the primary navigation
-and the audited provider/hash boundary; it does not claim zero future
-regressions or close G-024.
+judgment and historic screenshots cannot isolate one exact commit for every
+responsive change. At G-142 completion, the full Settings page still contained
+lower-section mobile overflow owned by G-024; G-024 subsequently closed that
+bounded residual with populated/empty channel and provider geometry guards.
+Neither goal claims zero future regressions.
 
 ## Non-goals
 

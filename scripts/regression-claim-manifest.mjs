@@ -610,6 +610,26 @@ export const REGRESSION_CLAIMS = [
     },
   },
   {
+    id: "mobile-settings-overflow",
+    goals: ["G-024"],
+    family: "settings-layout",
+    claim: "Populated and empty Settings surfaces remain operable without document overflow at a 390px viewport.",
+    boundary: "browser",
+    guards: [
+      {
+        path: "src/components/settings/__tests__/settings-mobile-overflow.browser.test.tsx",
+        project: "browser",
+        marker: "keeps populated delivery-channel rows and every action inside 315px",
+      },
+    ],
+    command: "test:browser",
+    lane: "browser-regressions",
+    failureProof: {
+      mode: "geometry-fixture",
+      evidence: "The red fixture widened a 315px container to 607px for channels and 385px for providers.",
+    },
+  },
+  {
     id: "recent-regression-lineage-guard",
     goals: ["G-142"],
     family: "release-confidence",

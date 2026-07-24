@@ -569,9 +569,9 @@ export function ProviderSetupCard({
   return (
     <Card
       id={`settings-${runtimeId}`}
-      className={`surface-card scroll-mt-4 ${compact ? "gap-0 py-0" : ""}`}
+      className={`surface-card min-w-0 scroll-mt-4 ${compact ? "gap-0 py-0" : ""}`}
     >
-      <CardHeader className={compact ? "p-0" : undefined}>
+      <CardHeader className={compact ? "min-w-0 p-0" : undefined}>
         {compact ? (
           <button
             type="button"
@@ -580,7 +580,7 @@ export function ProviderSetupCard({
             data-interactive-outline="preserve"
             aria-expanded={expanded}
             aria-controls={`${runtimeId}-provider-setup-controls`}
-            className="interactive-list-item flex w-full items-center gap-3 rounded-xl p-3 text-left"
+            className="interactive-list-item flex w-full min-w-0 items-center gap-3 rounded-xl p-3 text-left"
           >
             <Icon className="h-5 w-5 shrink-0" />
             <div className="min-w-0 flex-1">

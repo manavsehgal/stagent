@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import {
   AlertTriangle,
   ChevronDown,
@@ -188,13 +188,13 @@ function ProviderRow({
   }
 
   return (
-    <div className="surface-panel rounded-xl border border-border/60">
+    <div className="surface-panel min-w-0 rounded-xl border border-border/60">
       <button
         type="button"
         onClick={toggle}
         data-interactive-surface=""
         data-interactive-outline="preserve"
-        className="interactive-list-item flex w-full items-center gap-3 rounded-xl p-3 text-left"
+        className="interactive-list-item flex w-full min-w-0 items-center gap-3 rounded-xl p-3 text-left"
       >
         <div
           className={`h-2.5 w-2.5 shrink-0 rounded-full ${
@@ -289,6 +289,21 @@ function ProviderRow({
         </div>
       )}
     </div>
+  );
+}
+
+export function ProviderInventoryGrid({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <CardContent
+      data-settings-provider-grid=""
+      className="grid min-w-0 grid-cols-[minmax(0,1fr)] items-start gap-2 px-4 lg:grid-cols-2"
+    >
+      {children}
+    </CardContent>
   );
 }
 
@@ -583,7 +598,7 @@ export function ProvidersAndRuntimesSection() {
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="grid items-start gap-2 px-4 lg:grid-cols-2">
+        <ProviderInventoryGrid>
           {(["ollama", "lmstudio", "litellm"] as const).map((runtimeId) => (
             <ProviderSetupCard
               key={runtimeId}
@@ -777,7 +792,7 @@ export function ProvidersAndRuntimesSection() {
           </div>
         </ProviderRow>
 
-        </CardContent>
+        </ProviderInventoryGrid>
       </Card>
 
       <Card id="settings-provider-routing" className="surface-card gap-3 scroll-mt-[calc(var(--chrome-glance-top)+2rem)] py-4">

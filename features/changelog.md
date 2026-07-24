@@ -4,12 +4,21 @@
 
 ### Started
 
+- `mobile-settings-overflow` (G-024) — began the bounded post-G-142 repair
+  after reproducing the 390 px red state: a 315 px Settings container expands
+  to 515 px, led by configured delivery-channel rows and the compact provider
+  grid's min-content sizing.
 - `recent-regression-lineage-and-guard-hardening` (G-142) — began the bounded
   July 21–24 lineage audit and claim-to-guard review. Behavior-changing work
   waits for the evidence-ledger and implementation-plan gates.
 
 ### Groomed
 
+- `mobile-settings-overflow` (G-024) — reconciled the only unresolved G-142
+  product finding into its existing standalone contract rather than creating
+  duplicate goals. The repair owns provider and populated-channel shrink/reflow
+  plus a page-wide Settings geometry guard; all other July 24 findings remain
+  completed or disproved.
 - `recent-regression-lineage-and-guard-hardening` (G-142) — established a
   fixed July 21–24 audit of git, task conversation, changelog, staging, test,
   and release evidence. The goal must trace each recurring candidate from
@@ -21,10 +30,21 @@
 
 ### Completed
 
+- `mobile-settings-overflow` (G-024) — closed the only verified finding left
+  after G-142. Settings now carries complete shrink chains through its provider
+  inventory and deliberately reflows populated delivery-channel identity,
+  controls and actions on mobile; long inbound URLs scroll inside their own
+  bounded field. At 390 px the document, density wrapper and all 19 Settings
+  anchors measured contained, including all five provider cards expanded in
+  turn. At 1440 px the provider inventory retained two columns and every
+  populated channel row remained contained. A three-case real-Chromium guard
+  covers populated/empty channels, preserved actions, local URL scrolling and
+  collapsed/expanded provider cards.
 - `recent-regression-lineage-and-guard-hardening` (G-142) — reconciled 18
   regression/acceptance candidates across the fixed July 21–24 history and
   bound all 28 completed goal IDs to 28 executable claims and 43 guard anchors,
-  including G-142's own completion record.
+  including G-142's own completion record. G-024 subsequently extends that
+  fixed-window manifest to 29 goals, 29 claims and 44 guard anchors.
   The always-on gate now rejects missing/stale/wrong-project/receipt-less
   claims and runs real Chromium geometry checks; release qualification now
   includes the previously optional portable-Host, knowledge, install-debt,
@@ -33,7 +53,8 @@
   **Include** checkbox names, stabilizes provider deep links during async
   growth without fighting user navigation, and preserves five accessible
   primary tabs at 390 px. The live browser disproved G-141's full-page
-  zero-overflow claim; existing G-024 retains that lower-Settings residual.
+  zero-overflow claim; G-024 subsequently closed that bounded lower-Settings
+  residual.
 - `provider-auth-adoption-clarity` (G-139) — provider setup now distinguishes
   API keys, this device's account, and this Relay's isolated account. Detected
   Codex auth remains inactive until one explicit adoption action succeeds.
@@ -56,6 +77,18 @@
 
 ### Verification
 
+- G-024's focused real-browser suite passed all three cases; its red baseline
+  widened populated channels to 607/315 px and providers to 385/315 px. Live
+  full-page proof then held the 390 px document and every Settings anchor to
+  their client widths across collapsed and expanded provider states; the 1440
+  px comparison retained two provider columns and all actions.
+- G-024's final PR quality profile passed all 21 planned lanes: 4,021
+  regressions plus one intentional skip, ten Chromium tests, 29/29/44
+  claim-to-guard reconciliation, runtime graph, mutation strength, design
+  tokens, docs and package compatibility. TypeScript and the production build
+  passed; the build retained only the existing broad dynamic-file trace
+  warnings. Fresh two-pass review returned **APPROVE** with no unresolved
+  critical or informational findings.
 - The focused 224-test Settings/auth/runtime set passed across 39 files. The
   full suite then passed all 4,010 runnable regressions across 549 files, with
   one intentional skip.
