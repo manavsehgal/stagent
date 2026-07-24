@@ -50,7 +50,7 @@ describe("getBlueprintReadiness", () => {
     await expect(getBlueprintReadiness("research-report")).resolves.toMatchObject({
       ready: false,
       code: "no_eligible_runtime",
-      settingsHref: "/settings#settings-providers-runtimes",
+      settingsHref: "/settings#settings-providers",
     });
   });
 

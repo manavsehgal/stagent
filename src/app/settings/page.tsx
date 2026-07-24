@@ -11,8 +11,6 @@ import { BrowserToolsSection } from "@/components/settings/browser-tools-section
 import { WebSearchSection } from "@/components/settings/web-search-section";
 import { EnvironmentSection } from "@/components/settings/environment-section";
 import { LearningContextSection } from "@/components/settings/learning-context-section";
-import { OllamaSection } from "@/components/settings/ollama-section";
-import { OpenAICompatibleSection } from "@/components/settings/openai-compatible-section";
 import { ChannelsSection } from "@/components/settings/channels-section";
 import { GitHubSection } from "@/components/settings/github-section";
 import { InstanceSection } from "@/components/instance/instance-section";
@@ -63,32 +61,6 @@ export default function SettingsPage() {
           <HostDeploymentSection orientation={orientation} />
         </SettingsAnchor>
         <SettingsAnchor id="settings-providers">
-          <section
-            className="space-y-4"
-            aria-labelledby="provider-setup-heading"
-          >
-            <div>
-              <h2 id="provider-setup-heading" className="text-base font-medium">
-                Connect AI providers
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Save and verify at least one provider, then choose how Relay
-                routes work across the runtimes that are actually ready.
-              </p>
-            </div>
-            <div
-              id="settings-ollama-section"
-              tabIndex={-1}
-              className="scroll-mt-[calc(var(--chrome-glance-top)+2rem)] rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <OllamaSection compact />
-            </div>
-          </section>
-        </SettingsAnchor>
-        <SettingsAnchor id="settings-openai-compatible">
-          <OpenAICompatibleSection compact />
-        </SettingsAnchor>
-        <SettingsAnchor id="settings-provider-routing">
           <ProvidersAndRuntimesSection />
         </SettingsAnchor>
         <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-2">

@@ -235,7 +235,7 @@ export function TelemetryRail() {
       // chrome (bottom of the s-1 → s-2 → translucent-s-2 bar stack), NOT the
       // content plane. A faint teal top-glow (--rail-glow inset) marks the
       // chrome↔canvas seam and ties the rail to the accent system.
-      className="rail-instrument sticky top-[var(--chrome-header)] z-[var(--z-rail)] flex flex-none items-stretch border-b border-border"
+      className="rail-instrument sticky top-[var(--chrome-header)] z-[var(--z-rail)] flex w-full min-w-0 max-w-full flex-none items-stretch overflow-hidden border-b border-border"
     >
       {scrollState.overflow && (
         <div

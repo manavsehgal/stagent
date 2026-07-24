@@ -82,6 +82,21 @@ afterEach(() => {
 });
 
 describe("TelemetryRail sticky geometry", () => {
+  it("contains its horizontally scrolling cards inside the viewport", () => {
+    stubTelemetry(snapshot());
+    render(<TelemetryRail />);
+
+    expect(screen.getByTestId("telemetry-rail")).toHaveClass(
+      "w-full",
+      "min-w-0",
+      "max-w-full",
+      "overflow-hidden",
+    );
+    expect(screen.getByTestId("telemetry-scroll-region")).toHaveClass(
+      "overflow-x-auto",
+    );
+  });
+
   it("publishes its rendered border-box height as the next rail's authority", () => {
     stubTelemetry(snapshot());
     vi.spyOn(

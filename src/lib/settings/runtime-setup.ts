@@ -92,13 +92,13 @@ export async function getRuntimeSetupStates(): Promise<
               ? {
                   message:
                     "Codex is signed in on this computer, but that session has not been explicitly imported into Relay's isolated credential store.",
-                  href: "/settings#settings-providers-runtimes",
+                  href: "/settings#settings-providers",
                   actionLabel: "Import Codex session in Settings",
                 }
               : {
                   message:
                     "Codex is signed in on this computer through protected system storage. Relay cannot copy that session; create a separate Relay sign-in.",
-                  href: "/settings#settings-providers-runtimes",
+                  href: "/settings#settings-providers",
                   actionLabel: "Sign in to ChatGPT for Relay",
                 },
           }

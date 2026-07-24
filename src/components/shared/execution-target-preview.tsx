@@ -101,7 +101,7 @@ export function ExecutionTargetPreview({
                 ))
               ) : (
                 <Link
-                  href="/settings#settings-providers-runtimes"
+                  href="/settings#settings-providers"
                   className="inline-flex text-xs font-medium text-primary hover:underline"
                 >
                   Open provider setup

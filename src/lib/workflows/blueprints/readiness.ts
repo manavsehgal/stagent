@@ -81,7 +81,7 @@ export async function getBlueprintReadiness(
       checkedAt,
       code: classified.code,
       message: classified.message,
-      settingsHref: "/settings#settings-providers-runtimes",
+      settingsHref: "/settings#settings-providers",
     };
   }
 }

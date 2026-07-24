@@ -94,7 +94,7 @@ describe("ExecutionTargetPreview", () => {
                   runtimeId: "openai-codex-app-server",
                   reason:
                     "Codex is signed in on this computer, but not connected to Relay.",
-                  actionHref: "/settings#settings-providers-runtimes",
+                  actionHref: "/settings#settings-providers",
                   actionLabel: "Import Codex session in Settings",
                 },
               ],
@@ -110,7 +110,7 @@ describe("ExecutionTargetPreview", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Import Codex session in Settings" })
-    ).toHaveAttribute("href", "/settings#settings-providers-runtimes");
+    ).toHaveAttribute("href", "/settings#settings-providers");
   });
 
   it("renders a named blocking state without inventing an alternative", async () => {
@@ -128,7 +128,7 @@ describe("ExecutionTargetPreview", () => {
               "Codex is signed in on this computer, but not connected to Relay.",
             actions: [
               {
-                href: "/settings#settings-providers-runtimes",
+                href: "/settings#settings-providers",
                 label: "Import Codex session in Settings",
               },
             ],
@@ -146,7 +146,7 @@ describe("ExecutionTargetPreview", () => {
     expect(screen.getByText("Edit the target before running.")).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Import Codex session in Settings" })
-    ).toHaveAttribute("href", "/settings#settings-providers-runtimes");
+    ).toHaveAttribute("href", "/settings#settings-providers");
     expect(screen.queryByText("Open provider setup")).not.toBeInTheDocument();
     await waitFor(() => expect(screen.queryByText("Runs on")).not.toBeInTheDocument());
   });

@@ -193,7 +193,7 @@ describe("RuntimeRoutingControl", () => {
 
     const preview = screen.getByText("Resulting order for a general task")
       .parentElement?.parentElement;
-    const firstRuntime = screen.getByLabelText("Exclude Claude Code");
+    const firstRuntime = screen.getByLabelText("Include Claude Code");
     expect(
       preview?.compareDocumentPosition(firstRuntime) &
         Node.DOCUMENT_POSITION_FOLLOWING,
@@ -210,7 +210,7 @@ describe("RuntimeRoutingControl", () => {
         onRefreshHealth={onRefreshHealth}
       />,
     );
-    await user.click(screen.getByRole("checkbox", { name: "Exclude Claude Code" }));
+    await user.click(screen.getByRole("checkbox", { name: "Include Claude Code" }));
     await user.click(
       screen.getByRole("button", { name: "Move Anthropic Direct API earlier" }),
     );

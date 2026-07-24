@@ -18,7 +18,7 @@ describe("classifyExecutionTargetError", () => {
           {
             runtimeId: "openai-codex-app-server",
             reason: "Codex is detected but not connected to Relay.",
-            actionHref: "/settings#settings-providers-runtimes",
+            actionHref: "/settings#settings-providers",
             actionLabel: "Import Codex session in Settings",
           },
         ])
@@ -28,7 +28,7 @@ describe("classifyExecutionTargetError", () => {
       message: "No eligible runtime",
       actions: [
         {
-          href: "/settings#settings-providers-runtimes",
+          href: "/settings#settings-providers",
           label: "Import Codex session in Settings",
         },
       ],

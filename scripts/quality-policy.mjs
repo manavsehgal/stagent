@@ -3,6 +3,8 @@ export const QUALITY_PROFILES = ["pr", "release"];
 export const ALWAYS_LANES = [
   "typecheck",
   "test-projects",
+  "regression-claims",
+  "browser-regressions",
   "build-cli",
   "default-coverage",
   "coverage-policy",
@@ -26,6 +28,9 @@ export const CONDITIONAL_LANES = [
 ];
 
 export const RELEASE_ONLY_LANES = [
+  "portable-host-tests",
+  "knowledge-tests",
+  "install-debt",
   "release-preflight-tests",
   "relay-cell-publication-tests",
 ];
@@ -50,6 +55,9 @@ const qualityControlPaths = [
   "scripts/release-preflight.mjs",
   "scripts/lib/release-preflight.mjs",
   "scripts/release-preflight.test.mjs",
+  "scripts/regression-claim-manifest.mjs",
+  "scripts/check-regression-claims.mjs",
+  "scripts/check-regression-claims.test.mjs",
   "scripts/quality-policy.mjs",
   "scripts/quality-gate.mjs",
   "scripts/check-quality-coverage.mjs",
@@ -102,7 +110,10 @@ export const PATH_LANE_RULES = {
 // both covered and executable in several server modules; the affected floors
 // were rebaselined only where that paired decrement lowered the ratio. These
 // prevent regression; they are not claims that weak surfaces have reached the
-// long-term targets in docs/quality/regression-strategy.md.
+// long-term targets in docs/quality/regression-strategy.md. The database floor
+// was remeasured after workflow-audit and workshop schema declarations added
+// seven V8 executable lines: five additional lines are covered (219 vs 214),
+// while real-SQLite bootstrap/reset tests protect the declarative schema seam.
 export const RISK_SURFACES = [
   {
     id: "database",
@@ -110,7 +121,7 @@ export const RISK_SURFACES = [
     tier: 0,
     prefixes: ["src/lib/db/"],
     minimum: {
-      lines: { covered: 214, total: 279 },
+      lines: { covered: 219, total: 286 },
       branches: { covered: 12, total: 16 },
     },
   },

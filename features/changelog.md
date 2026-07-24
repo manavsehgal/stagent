@@ -2,8 +2,38 @@
 
 ## 2026-07-24
 
+### Started
+
+- `recent-regression-lineage-and-guard-hardening` (G-142) — began the bounded
+  July 21–24 lineage audit and claim-to-guard review. Behavior-changing work
+  waits for the evidence-ledger and implementation-plan gates.
+
+### Groomed
+
+- `recent-regression-lineage-and-guard-hardening` (G-142) — established a
+  fixed July 21–24 audit of git, task conversation, changelog, staging, test,
+  and release evidence. The goal must trace each recurring candidate from
+  last-known-good through its regressing commit/range, explain why existing
+  checks passed, and bind deliberate-failure-proven guards into the current
+  quality/release contract. It explicitly replaces the impossible “no more
+  regressions” promise with an enforceable claim-to-guard matrix, bounded repair
+  tranche, customer-identical proof, and residual-risk receipt.
+
 ### Completed
 
+- `recent-regression-lineage-and-guard-hardening` (G-142) — reconciled 18
+  regression/acceptance candidates across the fixed July 21–24 history and
+  bound all 28 completed goal IDs to 28 executable claims and 43 guard anchors,
+  including G-142's own completion record.
+  The always-on gate now rejects missing/stale/wrong-project/receipt-less
+  claims and runs real Chromium geometry checks; release qualification now
+  includes the previously optional portable-Host, knowledge, install-debt,
+  preflight, and Cell-publication proofs. Settings now renders one compact
+  five-provider inventory before a separate routing section, keeps persistent
+  **Include** checkbox names, stabilizes provider deep links during async
+  growth without fighting user navigation, and preserves five accessible
+  primary tabs at 390 px. The live browser disproved G-141's full-page
+  zero-overflow claim; existing G-024 retains that lower-Settings residual.
 - `provider-auth-adoption-clarity` (G-139) — provider setup now distinguishes
   API keys, this device's account, and this Relay's isolated account. Detected
   Codex auth remains inactive until one explicit adoption action succeeds.
@@ -20,8 +50,9 @@
 - `settings-compact-progressive-layout` (G-141) — provider modes reveal only
   relevant controls; Chat and Runtime controls form bounded responsive pairs;
   independent Settings sections use wide-screen columns with compact card
-  chrome. Final browser checks passed at 1440, 768, and 390 px, including zero
-  horizontal Settings overflow.
+  chrome. Its sampled browser checks passed at 1440, 768, and 390 px; G-142
+  later disproved the broader zero-horizontal-overflow acceptance claim and
+  retained the residual under G-024.
 
 ### Verification
 

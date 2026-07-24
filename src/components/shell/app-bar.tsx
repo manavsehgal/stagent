@@ -16,6 +16,7 @@ import {
   type AppInstance,
   type NavItem,
 } from "./nav-items";
+import { PrimaryNavigation } from "./primary-navigation";
 
 // The Arena app bar as a PERMANENT TWO-TIER bar (replaces the sliding
 // accordion). Tier 1 lists every top-level section; tier 2 shows the children
@@ -102,7 +103,7 @@ export function AppBar({ apps }: { apps: AppInstance[] }) {
         <Link
           href="/"
           aria-label="Orionfold Relay home"
-          className="flex shrink-0 items-center"
+          className="hidden shrink-0 items-center sm:flex"
         >
           <AinativeWordmark />
         </Link>
@@ -113,40 +114,7 @@ export function AppBar({ apps }: { apps: AppInstance[] }) {
             from tier 2's pill/fill LINK-selection idiom below — different shapes
             of emphasis, so the two tiers read as a hierarchy, not two rows of
             the same control. */}
-        <nav
-          aria-label="Primary"
-          role="tablist"
-          className="-mb-px flex min-w-0 flex-1 items-stretch gap-1 self-stretch overflow-x-auto"
-        >
-          {NAV_GROUPS.map((group) => {
-            const GroupIcon = group.icon;
-            const sectionActive = group.id === activeId;
-            return (
-              <Link
-                key={group.id}
-                href={group.href}
-                role="tab"
-                aria-selected={sectionActive}
-                aria-current={sectionActive ? "page" : undefined}
-                className={cn(
-                  "flex items-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 text-sm font-medium transition-colors",
-                  sectionActive
-                    ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <GroupIcon
-                  className={cn(
-                    "h-4 w-4 shrink-0",
-                    sectionActive ? "text-primary" : "text-muted-foreground",
-                  )}
-                  aria-hidden
-                />
-                {group.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <PrimaryNavigation activeId={activeId} LinkComponent={Link} />
 
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {/* Settings — icon-only gear in the utility cluster. Active = cyan. */}
@@ -173,10 +141,14 @@ export function AppBar({ apps }: { apps: AppInstance[] }) {
           >
             <kbd className="font-mono">⌘K</kbd>
           </button>
-          <ThemeToggle />
+          <span className="hidden sm:block">
+            <ThemeToggle />
+          </span>
           {/* Identity group: version pill · license tag · labeled auth dot.
               Static instance identity — the bar half of the rail-vs-bar split. */}
-          <BarIdentityCluster />
+          <span className="hidden lg:block">
+            <BarIdentityCluster />
+          </span>
         </div>
       </div>
 

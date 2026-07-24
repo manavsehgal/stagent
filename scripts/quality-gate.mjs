@@ -32,6 +32,16 @@ export const LANE_DEFINITIONS = {
     "test:projects",
     "test-projects"
   ),
+  "regression-claims": npmLane(
+    "regression-claims",
+    "test:regression-claims",
+    "regression-claims"
+  ),
+  "browser-regressions": npmLane(
+    "browser-regressions",
+    "test:browser",
+    "vitest-tests"
+  ),
   "default-coverage": {
     id: "default-coverage",
     command: process.execPath,
@@ -64,6 +74,21 @@ export const LANE_DEFINITIONS = {
     "relay-cell-publication-tests",
     "test:relay-cell-publication",
     "node-tests"
+  ),
+  "portable-host-tests": npmLane(
+    "portable-host-tests",
+    "test:portable-host",
+    "node-tests"
+  ),
+  "knowledge-tests": npmLane(
+    "knowledge-tests",
+    "test:knowledge",
+    "node-tests"
+  ),
+  "install-debt": npmLane(
+    "install-debt",
+    "check:install-debt",
+    "install-debt"
   ),
   "hook-tests": npmLane("hook-tests", "test:hooks", "node-tests"),
   "public-boundary-tests": npmLane(
@@ -142,8 +167,8 @@ function parseJson(output, laneId) {
 }
 
 function validateAudit(report) {
-  if (report.schemaVersion !== 5) {
-    return `test audit schema drifted: expected 5, received ${report.schemaVersion ?? "missing"}`;
+  if (report.schemaVersion !== 6) {
+    return `test audit schema drifted: expected 6, received ${report.schemaVersion ?? "missing"}`;
   }
   const requiredTopology = [
     "defaultExcludesE2e",
@@ -152,6 +177,7 @@ function validateAudit(report) {
     "defaultHarnessOwnsMutableState",
     "nodeJsdomBrowserProjectsConfigured",
     "projectMembershipGuardConfigured",
+    "regressionClaimGuardConfigured",
     "runtimeGraphSmokeConfigured",
     "mutationStrengthConfigured",
     "qualityGateConfigured",
@@ -196,6 +222,20 @@ export function evaluateLaneResult(lane, result, root = repoRoot) {
     case "test-projects":
       if (!output.includes("[test-projects] OK")) {
         missing = "one-to-one Node/jsdom/browser project receipt";
+      }
+      break;
+    case "regression-claims":
+      if (
+        !output.includes("[regression-claims] OK") ||
+        !/# pass [1-9]\d*/.test(output) ||
+        !/# fail 0/.test(output)
+      ) {
+        missing = "complete claim manifest plus non-zero Node test count";
+      }
+      break;
+    case "vitest-tests":
+      if (!/Test Files\s+\d+ passed/.test(output) || !/Tests\s+\d+ passed/.test(output)) {
+        missing = "green Vitest file and test counts";
       }
       break;
     case "default-coverage":
@@ -287,6 +327,11 @@ export function evaluateLaneResult(lane, result, root = repoRoot) {
       break;
     case "build-cli":
       if (!/Build success|DTS Build success/.test(output)) missing = "CLI build receipt";
+      break;
+    case "install-debt":
+      if (!output.includes("install dependency debt verified:")) {
+        missing = "exact install-dependency debt receipt";
+      }
       break;
     default:
       missing = `known evidence validator for ${lane.evidence}`;

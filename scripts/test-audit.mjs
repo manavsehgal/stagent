@@ -55,7 +55,10 @@ const e2eFiles = srcFiles.filter((path) =>
   /^src\/__tests__\/e2e\/.*\.test\.ts$/.test(path)
 );
 const defaultVitestFiles = vitestFiles.filter(
-  (path) => !path.startsWith("src/__tests__/e2e/")
+  (path) => {
+    const project = classifyTestFile(path);
+    return project !== "e2e" && project !== "browser";
+  }
 );
 const productionFiles = [...srcFiles, ...binFiles].filter(
   (path) =>
@@ -136,6 +139,11 @@ const qualityWorkflow = readFileSync(
   resolve(repoRoot, ".github/workflows/quality-gate.yml"),
   "utf8"
 );
+const regressionClaimFiles = [
+  "scripts/regression-claim-manifest.mjs",
+  "scripts/check-regression-claims.mjs",
+  "scripts/check-regression-claims.test.mjs",
+];
 
 const coverageSummaryPath = resolve(repoRoot, "coverage/coverage-summary.json");
 const coverageSummary = existsSync(coverageSummaryPath)
@@ -192,12 +200,15 @@ const coverage = coverageSummary
   : null;
 
 const report = {
-  schemaVersion: 5,
+  schemaVersion: 6,
   scope: {
     productionFiles: productionFiles.length,
     totalTestFiles: vitestFiles.length + nodeTestFiles.length,
     vitestTestFiles: vitestFiles.length,
     defaultVitestTestFiles: defaultVitestFiles.length,
+    browserVitestTestFiles: vitestFiles.filter(
+      (path) => classifyTestFile(path) === "browser"
+    ).length,
     e2eVitestTestFiles: e2eFiles.length,
     nodeTestFiles: nodeTestFiles.length,
     vitestSourceLines: vitestFileStats.reduce(
@@ -283,6 +294,13 @@ const report = {
         "node scripts/check-test-projects.mjs" &&
       existsSync(resolve(repoRoot, "scripts/test-projects.mjs")) &&
       existsSync(resolve(repoRoot, "scripts/check-test-projects.mjs")),
+    regressionClaimGuardConfigured:
+      packageJson.scripts?.["test:regression-claims"] ===
+        "node scripts/check-regression-claims.mjs && node --test scripts/check-regression-claims.test.mjs scripts/staging-environment.test.mjs" &&
+      packageJson.scripts?.["check:regression-claims"] ===
+        "node scripts/check-regression-claims.mjs" &&
+      regressionClaimFiles.every((path) => existsSync(resolve(repoRoot, path))) &&
+      qualityWorkflow.includes("npm run quality:gate"),
     runtimeGraphSmokeConfigured:
       packageJson.scripts?.["test:runtime-graph"] ===
         "node scripts/runtime-module-graph-smoke.mjs" &&
@@ -338,6 +356,7 @@ if (jsonOnly) {
     ["Production TypeScript files", report.scope.productionFiles],
     ["Test files (repository)", report.scope.totalTestFiles],
     ["Vitest files (default)", report.scope.defaultVitestTestFiles],
+    ["Vitest files (browser)", report.scope.browserVitestTestFiles],
     ["Vitest files (E2E)", report.scope.e2eVitestTestFiles],
     ["Node test files", report.scope.nodeTestFiles],
     ["Vitest source lines", report.scope.vitestSourceLines],
@@ -374,6 +393,10 @@ if (jsonOnly) {
   console.log(
     `Project membership guard`.padEnd(30),
     report.topology.projectMembershipGuardConfigured ? "configured" : "MISSING"
+  );
+  console.log(
+    `Regression claim guard`.padEnd(30),
+    report.topology.regressionClaimGuardConfigured ? "configured" : "MISSING"
   );
   console.log(
     `Runtime module-graph smoke`.padEnd(30),

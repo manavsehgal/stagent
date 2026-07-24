@@ -128,6 +128,9 @@ test("release plans run every conditional and release-only lane", () => {
     ...RELEASE_ONLY_LANES,
   ]);
   assert.deepEqual(RELEASE_ONLY_LANES, [
+    "portable-host-tests",
+    "knowledge-tests",
+    "install-debt",
     "release-preflight-tests",
     "relay-cell-publication-tests",
   ]);
@@ -222,6 +225,68 @@ test("test-project membership lane requires its one-to-one receipt", () => {
       stderr: "",
     }).reason,
     /one-to-one Node\/jsdom\/browser project receipt/
+  );
+});
+
+test("regression claim and browser lanes require semantic test receipts", () => {
+  assert.equal(
+    evaluateLaneResult(LANE_DEFINITIONS["regression-claims"], {
+      status: 0,
+      signal: null,
+      stdout:
+        "[regression-claims] OK goals=27 claims=18 guards=29\n# pass 6\n# fail 0",
+      stderr: "",
+    }).ok,
+    true,
+  );
+  assert.match(
+    evaluateLaneResult(LANE_DEFINITIONS["regression-claims"], {
+      status: 0,
+      signal: null,
+      stdout: "[regression-claims] OK goals=27 claims=18 guards=29",
+      stderr: "",
+    }).reason,
+    /complete claim manifest/,
+  );
+  assert.equal(
+    evaluateLaneResult(LANE_DEFINITIONS["browser-regressions"], {
+      status: 0,
+      signal: null,
+      stdout: "Test Files  1 passed (1)\nTests  2 passed (2)",
+      stderr: "",
+    }).ok,
+    true,
+  );
+  assert.match(
+    evaluateLaneResult(LANE_DEFINITIONS["browser-regressions"], {
+      status: 0,
+      signal: null,
+      stdout: "Tests  2 passed (2)",
+      stderr: "",
+    }).reason,
+    /green Vitest file and test counts/,
+  );
+});
+
+test("release-only dependency debt lane requires its exact receipt", () => {
+  const lane = LANE_DEFINITIONS["install-debt"];
+  assert.equal(
+    evaluateLaneResult(lane, {
+      status: 0,
+      signal: null,
+      stdout: "install dependency debt verified: 6 expected warnings",
+      stderr: "",
+    }).ok,
+    true,
+  );
+  assert.match(
+    evaluateLaneResult(lane, {
+      status: 0,
+      signal: null,
+      stdout: "all good",
+      stderr: "",
+    }).reason,
+    /install-dependency debt receipt/,
   );
 });
 

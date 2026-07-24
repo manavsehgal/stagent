@@ -203,9 +203,13 @@ function messageFrom(payload: Record<string, unknown>, fallback: string): string
 export function ProviderSetupCard({
   runtimeId,
   compact = false,
+  expanded: controlledExpanded,
+  onExpandedChange,
 }: {
   runtimeId: SetupRuntimeId;
   compact?: boolean;
+  expanded?: boolean;
+  onExpandedChange?: (expanded: boolean) => void;
 }) {
   const definition = PROVIDER_DEFINITIONS[runtimeId];
   const Icon = definition.icon;
@@ -226,7 +230,17 @@ export function ProviderSetupCard({
   const [error, setError] = useState<{ phase: string; message: string } | null>(null);
   const [acquisitionModel, setAcquisitionModel] = useState("");
   const [downloadStatus, setDownloadStatus] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState(!compact);
+  const [internalExpanded, setInternalExpanded] = useState(!compact);
+  const expanded = controlledExpanded ?? internalExpanded;
+  const setExpanded = useCallback(
+    (next: boolean | ((current: boolean) => boolean)) => {
+      const resolved =
+        typeof next === "function" ? next(expanded) : next;
+      if (controlledExpanded === undefined) setInternalExpanded(resolved);
+      onExpandedChange?.(resolved);
+    },
+    [controlledExpanded, expanded, onExpandedChange],
+  );
 
   useEffect(() => () => {
     mounted.current = false;
@@ -553,7 +567,10 @@ export function ProviderSetupCard({
   );
 
   return (
-    <Card id={`settings-${runtimeId}`} className="surface-card scroll-mt-4">
+    <Card
+      id={`settings-${runtimeId}`}
+      className={`surface-card scroll-mt-4 ${compact ? "gap-0 py-0" : ""}`}
+    >
       <CardHeader className={compact ? "p-0" : undefined}>
         {compact ? (
           <button
@@ -563,7 +580,7 @@ export function ProviderSetupCard({
             data-interactive-outline="preserve"
             aria-expanded={expanded}
             aria-controls={`${runtimeId}-provider-setup-controls`}
-            className="interactive-list-item flex w-full items-center gap-3 rounded-xl p-4 text-left"
+            className="interactive-list-item flex w-full items-center gap-3 rounded-xl p-3 text-left"
           >
             <Icon className="h-5 w-5 shrink-0" />
             <div className="min-w-0 flex-1">
@@ -610,7 +627,7 @@ export function ProviderSetupCard({
           id={`${runtimeId}-provider-setup-controls`}
           className={
             compact
-              ? "space-y-5 border-t border-border/60 pt-5"
+              ? "space-y-3 border-t border-border/60 pt-3"
               : "space-y-5"
           }
         >

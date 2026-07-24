@@ -435,7 +435,7 @@ export function RuntimeRoutingControl({
                           onCheckedChange={(checked) =>
                             toggleRuntime(status.runtimeId, checked === true)
                           }
-                          aria-label={`${selected ? "Exclude" : "Include"} ${status.label}`}
+                          aria-label={`Include ${status.label}`}
                           className="mt-0.5"
                         />
                         <Label

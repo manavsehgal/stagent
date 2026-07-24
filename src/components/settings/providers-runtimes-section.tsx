@@ -32,6 +32,10 @@ import {
   RuntimeRoutingControl,
   type RoutingSettingsView,
 } from "./runtime-routing-control";
+import {
+  ProviderSetupCard,
+  type SetupRuntimeId,
+} from "./provider-setup-card";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -152,7 +156,11 @@ function ProviderRow({
   let statusLine: string;
   if (readiness === "not-configured") {
     statusLine =
-      provider.authMethod === "oauth"
+      name === "OpenAI" &&
+      provider.existingSessionAvailable &&
+      !provider.oauthConnected
+        ? "Activate ChatGPT or add an API key"
+        : provider.authMethod === "oauth"
         ? name === "OpenAI"
           ? "Sign in with ChatGPT to enable Codex App Server"
           : `Verify ${oauthLabel ?? "OAuth"} access to enable Claude Code`
@@ -295,6 +303,8 @@ export function ProvidersAndRuntimesSection() {
   const [openAILoginState, setOpenAILoginState] = useState<OpenAILoginState | null>(null);
   const [adoptingCodex, setAdoptingCodex] = useState(false);
   const [codexAdoptionError, setCodexAdoptionError] = useState<string | null>(null);
+  const [openLocalProvider, setOpenLocalProvider] =
+    useState<SetupRuntimeId | null>(null);
 
   const fetchData = useCallback(async (
     refreshRuntimeHealth = false,
@@ -487,11 +497,11 @@ export function ProvidersAndRuntimesSection() {
 
   if (loading) {
     return (
-      <Card className="surface-card">
+      <Card className="surface-card" data-provider-inventory="">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Network className="h-5 w-5" />
-            Anthropic, OpenAI &amp; task routing
+            Connect AI providers
           </CardTitle>
           <CardDescription>Loading provider configuration...</CardDescription>
         </CardHeader>
@@ -504,11 +514,11 @@ export function ProvidersAndRuntimesSection() {
   // the previous `loading || !data` guard silently hung here (issue #9).
   if (!data) {
     return (
-      <Card className="surface-card">
+      <Card className="surface-card" data-provider-inventory="">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
-            Anthropic, OpenAI &amp; task routing
+            Connect AI providers
           </CardTitle>
           <CardDescription>
             {error ?? "Failed to load provider configuration."}
@@ -553,26 +563,38 @@ export function ProvidersAndRuntimesSection() {
   const noneReady = readyProviderCount === 0;
 
   return (
-    <Card className="surface-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Network className="h-5 w-5" />
-          Anthropic, OpenAI &amp; task routing
-        </CardTitle>
-        <CardDescription>
-          {noneReady
-            ? configuredProviderCount > 0
-              ? "Provider setup is saved, but no runtime has been verified yet."
-              : "Get started by connecting at least one AI provider."
-            : `${readyProviderCount} provider${readyProviderCount > 1 ? "s" : ""} ready. ${
-                data.runtimeRoutingStatuses.filter((status) =>
-                  statusIsReady(status),
-                ).length
-              } verified runtimes available`}
-        </CardDescription>
-      </CardHeader>
+    <div className="space-y-4">
+      <Card className="surface-card gap-3 py-4" data-provider-inventory="">
+        <CardHeader className="px-4 pb-1">
+          <CardTitle className="flex items-center gap-2">
+            <Network className="h-5 w-5" />
+            Connect AI providers
+          </CardTitle>
+          <CardDescription>
+            {noneReady
+              ? configuredProviderCount > 0
+                ? "Setup is saved, but no provider has been verified yet."
+                : "Connect and verify at least one provider."
+              : `${readyProviderCount} provider${readyProviderCount > 1 ? "s" : ""} ready · ${
+                  data.runtimeRoutingStatuses.filter((status) =>
+                    statusIsReady(status),
+                  ).length
+                } verified runtimes`}
+          </CardDescription>
+        </CardHeader>
 
-      <CardContent className="space-y-4">
+        <CardContent className="grid items-start gap-2 px-4 lg:grid-cols-2">
+          {(["ollama", "lmstudio", "litellm"] as const).map((runtimeId) => (
+            <ProviderSetupCard
+              key={runtimeId}
+              runtimeId={runtimeId}
+              compact
+              expanded={openLocalProvider === runtimeId}
+              onExpandedChange={(open) =>
+                setOpenLocalProvider(open ? runtimeId : null)
+              }
+            />
+          ))}
         {/* Anthropic provider — controlled open state */}
         <ProviderRow
           name="Anthropic"
@@ -755,16 +777,18 @@ export function ProvidersAndRuntimesSection() {
           </div>
         </ProviderRow>
 
-        <Separator />
+        </CardContent>
+      </Card>
 
-        <div>
-          <p className="text-sm font-semibold">Route work across ready runtimes</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Provider changes above update this eligible runtime list
-            automatically.
-          </p>
-        </div>
-
+      <Card id="settings-provider-routing" className="surface-card gap-3 scroll-mt-[calc(var(--chrome-glance-top)+2rem)] py-4">
+        <CardHeader className="px-4 pb-1">
+          <CardTitle>Task routing</CardTitle>
+          <CardDescription>
+            Order and constrain the verified runtimes above for Relay work.
+            Provider changes refresh this eligible runtime list automatically.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="px-4">
         <RuntimeRoutingControl
           routing={data.routing}
           statuses={data.runtimeRoutingStatuses}
@@ -786,7 +810,8 @@ export function ProvidersAndRuntimesSection() {
             }
           }}
         />
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

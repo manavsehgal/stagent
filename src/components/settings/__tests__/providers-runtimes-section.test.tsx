@@ -5,6 +5,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ProvidersAndRuntimesSection } from "@/components/settings/providers-runtimes-section";
 import { OpenAIChatGPTAuthControl } from "@/components/settings/openai-chatgpt-auth-control";
 
+vi.mock("@/components/settings/provider-setup-card", () => ({
+  ProviderSetupCard: ({ runtimeId }: { runtimeId: string }) => (
+    <button type="button">{runtimeId}</button>
+  ),
+}));
+
 const runtimeIds = [
   "claude-code",
   "openai-codex-app-server",
@@ -446,23 +452,41 @@ describe("providers and runtimes section", () => {
     render(<ProvidersAndRuntimesSection />);
 
     const openAI = (await screen.findByText("OpenAI")).closest("button");
-    const routing = screen.getByText("Task routing");
+    const routing = document.querySelector(
+      "#settings-provider-routing [data-slot='card-title']",
+    );
 
     expect(openAI).not.toBeNull();
+    expect(routing).not.toBeNull();
     expect(
       openAI!.compareDocumentPosition(routing) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+    expect(screen.getByText(/Provider changes refresh this eligible runtime list/))
+      .toBeInTheDocument();
+  });
+
+  it("renders one provider inventory before a separate task-routing section", async () => {
+    const { container } = render(<ProvidersAndRuntimesSection />);
+
+    const inventory = await screen.findByText("Connect AI providers");
+    const routing = container.querySelector(
+      "#settings-provider-routing [data-slot='card-title']",
+    );
+    expect(routing).not.toBeNull();
+    expect(container.querySelectorAll("[data-provider-inventory]")).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "ollama" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "lmstudio" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "litellm" })).toBeInTheDocument();
     expect(
-      screen.getByText(
-        "Provider changes above update this eligible runtime list automatically.",
-      ),
-    ).toBeInTheDocument();
+      inventory.compareDocumentPosition(routing!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it("refreshes routing readiness when a local provider changes", async () => {
     render(<ProvidersAndRuntimesSection />);
-    await screen.findByText("Anthropic, OpenAI & task routing");
+    await screen.findByText("Connect AI providers");
 
     window.dispatchEvent(
       new CustomEvent("relay:runtime-readiness-changed"),

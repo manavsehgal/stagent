@@ -146,7 +146,7 @@ export function RunNowButton({
           ...(needsRuntimeSetup(result)
             ? {
                 action: (
-                  <Link href="/settings#settings-providers-runtimes">
+                  <Link href="/settings#settings-providers">
                     Open runtime settings
                   </Link>
                 ),
@@ -205,7 +205,7 @@ function ReadinessBadge({
   if (readiness.state === "blocked") {
     return (
       <Link
-        href="/settings#settings-providers-runtimes"
+        href="/settings#settings-providers"
         className="inline-flex h-5 shrink-0 items-center rounded-md border px-1.5 text-[11px] font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         title={readiness.message}
         aria-label="Set up a runtime for this blueprint"

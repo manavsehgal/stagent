@@ -97,7 +97,7 @@ export function RunNowSheet({
             ...(needsRuntimeSetup(result)
               ? {
                     action: (
-                      <Link href="/settings#settings-providers-runtimes">
+                      <Link href="/settings#settings-providers">
                         Open runtime settings
                       </Link>
                     ),
