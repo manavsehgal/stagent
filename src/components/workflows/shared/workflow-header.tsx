@@ -54,10 +54,17 @@ export function computeSignpost(data: WorkflowStatusResponse): Signpost {
       text: "Ready to go. Click Execute to start this workflow.",
     };
   }
+  const execution = getWorkflowExecutionInfoFromStatusResponse(data);
+  if (execution.isLive) {
+    return {
+      tone: "info",
+      icon: "spinner",
+      text: "Working now. Watch the steps below as it goes.",
+    };
+  }
   // A live workflow is `active` at the top level (`running` is a step/run-state
   // value; the loop arm may report it too — accept both).
   if (status === "active" || status === "running") {
-    const execution = getWorkflowExecutionInfoFromStatusResponse(data);
     if (execution.status === "waiting") {
       return {
         tone: "wait",

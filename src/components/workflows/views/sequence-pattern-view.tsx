@@ -175,7 +175,12 @@ export function SequencePatternView({
         );
         const body = await response.json().catch(() => null);
         if (response.ok) {
-          toast.success("Runtime is ready. Resuming from this step.");
+          const step = data.steps.find((item) => item.id === stepId);
+          toast.success(
+            step?.state.status === "blocked_runtime"
+              ? "Runtime is ready. Resuming from this step."
+              : "Resuming from the failed step. Completed steps will not run again."
+          );
         } else {
           toast.error(body?.error ?? "Runtime recovery could not start");
         }
@@ -407,7 +412,8 @@ export function SequencePatternView({
                                 {step.state.error}
                               </p>
                               {step.state.status === "blocked_runtime" &&
-                                step.state.recovery && (
+                                step.state.recovery &&
+                                step.state.recoveryEligibility?.eligible && (
                                   <div className="flex flex-wrap items-center gap-2">
                                     <Button
                                       size="sm"
@@ -426,9 +432,48 @@ export function SequencePatternView({
                                     <span className="text-[11px] text-muted-foreground">
                                       Attempt {step.state.recovery.attempts + 1} of{" "}
                                       {step.state.recovery.maxAttempts}; completed
-                                      steps will not run again.
+                                      replay-safe step; completed steps will not
+                                      run again.
                                     </span>
                                   </div>
+                                )}
+                              {step.state.status === "blocked_runtime" &&
+                                step.state.recoveryEligibility &&
+                                !step.state.recoveryEligibility.eligible && (
+                                  <p className="text-[11px] text-muted-foreground">
+                                    Resume unavailable:{" "}
+                                    {step.state.recoveryEligibility.reason}
+                                  </p>
+                                )}
+                              {step.state.status === "failed" &&
+                                step.state.recoveryEligibility?.eligible && (
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 gap-1.5 text-xs"
+                                      disabled={recoveringStepId === step.id}
+                                      onClick={() => handleRetryStep(step.id)}
+                                    >
+                                      {recoveringStepId === step.id ? (
+                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                      ) : (
+                                        <RotateCcw className="h-3.5 w-3.5" />
+                                      )}
+                                      Resume from failed step
+                                    </Button>
+                                    <span className="text-[11px] text-muted-foreground">
+                                      {step.state.recoveryEligibility.reason}
+                                    </span>
+                                  </div>
+                                )}
+                              {step.state.status === "failed" &&
+                                step.state.recoveryEligibility &&
+                                !step.state.recoveryEligibility.eligible && (
+                                  <p className="text-[11px] text-muted-foreground">
+                                    Resume unavailable:{" "}
+                                    {step.state.recoveryEligibility.reason}
+                                  </p>
                                 )}
                             </div>
                           )}

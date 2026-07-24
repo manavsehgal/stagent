@@ -568,7 +568,7 @@ export async function tickScheduler(): Promise<void> {
     console.error("[scheduler] delayed-workflow check error:", err);
   }
 
-  // Reconcile answered checkpoint inputs that were persisted before a process
+  // Reconcile answered checkpoint inputs/approvals persisted before a process
   // exit. Immediate response handling normally resumes these; this sweep is
   // the durable shadow path when that fire-and-forget continuation was lost.
   try {
@@ -584,13 +584,13 @@ export async function tickScheduler(): Promise<void> {
     for (const workflow of pausedInteractions) {
       resumeWorkflowInteraction(workflow.id).catch((error) => {
         console.error(
-          `[scheduler] failed to reconcile workflow input ${workflow.id}:`,
+          `[scheduler] failed to reconcile workflow interaction ${workflow.id}:`,
           error
         );
       });
     }
   } catch (error) {
-    console.error("[scheduler] workflow-input reconciliation error:", error);
+    console.error("[scheduler] workflow-interaction reconciliation error:", error);
   }
 }
 

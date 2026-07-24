@@ -10,6 +10,7 @@ import { LoopPatternView } from "./views/loop-pattern-view";
 import { WorkflowLoadingSkeleton } from "./shared/workflow-loading-skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OperationsReceiptHistory } from "@/components/operations/operations-receipt-history";
+import { WorkflowRunHistory } from "./workflow-run-history";
 
 /**
  * Thin router for the workflow detail page (TDR-031). Owns polling + the
@@ -52,6 +53,7 @@ export function WorkflowStatusView({ workflowId }: { workflowId: string }) {
           onRequestDelete={onRequestDelete}
         />
       )}
+      <WorkflowRunHistory runs={data.runHistory ?? []} />
       <Card className="mt-6">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">

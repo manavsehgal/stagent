@@ -73,6 +73,15 @@ export function getWorkflowExecutionInfo(input: WorkflowExecutionInput): Workflo
   }
 
   if (input.status === "paused") {
+    if (liveTaskCount > 0 || hasRunningStep) {
+      return {
+        status: "running",
+        label: "running",
+        isLive: true,
+        canRun: false,
+        canStop: true,
+      };
+    }
     return {
       status: "paused",
       label: "paused",

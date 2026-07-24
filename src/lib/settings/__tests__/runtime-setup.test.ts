@@ -13,6 +13,8 @@ const { mockGetAuthSettings, mockGetOpenAIAuthSettings } = vi.hoisted(() => ({
     apiKeySource: "db" as const,
     oauthConnected: true,
     existingSessionAvailable: false,
+    existingSessionAdoptable: false,
+    existingSessionStatus: "not_authenticated" as const,
     account: { type: "chatgpt" as const, email: "dev@example.com", planType: "pro" },
     rateLimits: null,
   })),
@@ -76,6 +78,8 @@ describe("runtime setup states", () => {
       apiKeySource: "unknown",
       oauthConnected: false,
       existingSessionAvailable: true,
+      existingSessionAdoptable: true,
+      existingSessionStatus: "connected",
       account: null,
       rateLimits: null,
     });
@@ -83,6 +87,35 @@ describe("runtime setup states", () => {
     const states = await getRuntimeSetupStates();
     expect(states["openai-codex-app-server"].configured).toBe(false);
     expect(states["openai-codex-app-server"].authMethod).toBe("oauth");
+    expect(states["openai-codex-app-server"].setupGuidance).toMatchObject({
+      actionLabel: "Import Codex session in Settings",
+    });
+  });
+
+  it("guides keyring-only Codex sessions to isolated Relay sign-in without calling them connected", async () => {
+    mockGetOpenAIAuthSettings.mockResolvedValueOnce({
+      method: "oauth",
+      hasKey: false,
+      apiKeySource: "unknown",
+      oauthConnected: false,
+      existingSessionAvailable: true,
+      existingSessionAdoptable: false,
+      existingSessionStatus: "connected",
+      account: null,
+      rateLimits: null,
+    });
+    const { getRuntimeSetupStates } = await import("../runtime-setup");
+    const states = await getRuntimeSetupStates();
+
+    expect(states["openai-codex-app-server"]).toMatchObject({
+      configured: false,
+      setupGuidance: {
+        actionLabel: "Sign in to ChatGPT for Relay",
+      },
+    });
+    expect(states["openai-codex-app-server"].setupGuidance?.message).toContain(
+      "cannot copy"
+    );
   });
 });
 

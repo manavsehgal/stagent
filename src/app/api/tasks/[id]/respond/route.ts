@@ -156,10 +156,13 @@ export async function POST(
     return NextResponse.json(failure.body, { status: failure.status });
   }
 
-  // Workflow AskUserQuestion gates have no task row. Attempt immediate
+  // Workflow AskUserQuestion and checkpoint gates have no task row. Attempt immediate
   // continuation after the response is durably committed; the scheduler also
   // reconciles this persisted state after process re-entry.
-  if (!notification.taskId && isQuestion) {
+  if (
+    !notification.taskId &&
+    (isQuestion || notification.toolName === "WorkflowCheckpoint")
+  ) {
     try {
       const toolInput = JSON.parse(notification.toolInput ?? "{}");
       if (typeof toolInput.workflowId === "string") {
@@ -169,13 +172,13 @@ export async function POST(
           )
           .catch((error) => {
             console.error(
-              `Workflow ${toolInput.workflowId} input resume failed:`,
+              `Workflow ${toolInput.workflowId} interaction resume failed:`,
               error
             );
           });
       }
     } catch (error) {
-      console.error("Workflow input response has malformed tool context:", error);
+      console.error("Workflow response has malformed tool context:", error);
     }
   }
 

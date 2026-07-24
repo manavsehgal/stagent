@@ -35,6 +35,7 @@ vi.mock("@/lib/workflows/execution-targets", () => ({
 import {
   executeWorkflow,
   parseWorkflowState,
+  retryWorkflowStep,
   resumeWorkflow,
   resumeWorkflowInteraction,
 } from "../engine";
@@ -147,6 +148,56 @@ describe("workflow recovery contract with real SQLite state", () => {
     ]);
     expect(db.select().from(tasks).all()).toHaveLength(2);
     expectFailedReceipt(workflowId);
+  });
+
+  it("resumes an eligible failed sequence suffix without replaying the completed prefix", async () => {
+    const workflowId = seedWorkflow({
+      definition: {
+        pattern: "sequence",
+        steps: [
+          { id: "one", name: "One", prompt: "first" },
+          {
+            id: "two",
+            name: "Two",
+            prompt: "second",
+            replaySafe: true,
+          },
+          { id: "three", name: "Three", prompt: "third" },
+        ],
+      },
+    });
+    dispatch.handler = async (taskId) => {
+      const task = db.select().from(tasks).where(eq(tasks.id, taskId)).get()!;
+      setTaskTerminal(
+        taskId,
+        task.title.endsWith("Two") ? "failed" : "completed",
+        task.title.endsWith("Two") ? "provider refused" : "prefix result"
+      );
+    };
+    await executeWorkflow(workflowId);
+    const prefixTaskId = readState(workflowId).stepStates[0].taskId;
+
+    dispatch.handler = async (taskId) =>
+      setTaskTerminal(taskId, "completed", "recovered");
+    await retryWorkflowStep(workflowId, "two");
+    await vi.waitFor(() => {
+      expect(readWorkflow(workflowId).status).toBe("completed");
+    });
+
+    expect(readState(workflowId).stepStates.map((step) => step.status)).toEqual([
+      "completed",
+      "completed",
+      "completed",
+    ]);
+    expect(readState(workflowId).stepStates[0].taskId).toBe(prefixTaskId);
+    expect(dispatch.calls).toHaveLength(4);
+    expect(
+      db
+        .select()
+        .from(agentLogs)
+        .all()
+        .map((log) => log.event)
+    ).toContain("workflow_step_retry_completed");
   });
 
   it("pauses a machine-classified transient failure without replaying its completed prefix", async () => {
@@ -418,5 +469,254 @@ describe("workflow recovery contract with real SQLite state", () => {
     const [task] = db.select().from(tasks).all();
     expect(task.description).toContain("Use the signed customer evidence");
     expect(readWorkflow(workflowId).status).toBe("completed");
+  });
+
+  it("keeps checkpoint approval pending until an explicit allow and resumes once", async () => {
+    const workflowId = seedWorkflow({
+      definition: {
+        pattern: "checkpoint",
+        steps: [
+          { id: "draft", name: "Draft", prompt: "Create the draft" },
+          {
+            id: "publish",
+            name: "Publish",
+            prompt: "Publish the approved draft",
+            requiresApproval: true,
+          },
+        ],
+      },
+    });
+
+    await executeWorkflow(workflowId);
+
+    const paused = readState(workflowId);
+    expect(readWorkflow(workflowId).status).toBe("paused");
+    expect(paused.pendingInteraction).toMatchObject({
+      kind: "approval",
+      stepIndex: 1,
+    });
+    expect(paused.stepStates).toMatchObject([
+      { stepId: "draft", status: "completed" },
+      { stepId: "publish", status: "waiting_approval" },
+    ]);
+    const notificationId = paused.pendingInteraction!.notificationId;
+    const notification = db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.id, notificationId))
+      .get()!;
+    expect(notification.response).toBeNull();
+    expect(notification.respondedAt).toBeNull();
+
+    expect(await resumeWorkflowInteraction(workflowId)).toBe("not_ready");
+    expect(readWorkflow(workflowId).status).toBe("paused");
+
+    resolvePermission({
+      expectedTaskId: "_checkpoint",
+      notificationId,
+      behavior: "allow",
+    });
+    expect(
+      await resumeWorkflowInteraction(workflowId, notificationId)
+    ).toBe("resumed");
+    expect(await resumeWorkflowInteraction(workflowId, notificationId)).toBe(
+      "not_ready"
+    );
+    expect(readWorkflow(workflowId).status).toBe("completed");
+    expect(dispatch.calls).toHaveLength(2);
+  });
+
+  it("reclaims a preallocated approved attempt after process re-entry without changing its task identity", async () => {
+    const workflowId = seedWorkflow({
+      definition: {
+        pattern: "checkpoint",
+        steps: [
+          {
+            id: "input",
+            name: "Gather brief",
+            prompt: "Write the brief",
+            requiresInput: true,
+          },
+        ],
+      },
+    });
+    await executeWorkflow(workflowId);
+    const state = readState(workflowId);
+    const notificationId = state.pendingInteraction!.notificationId;
+    const preallocatedTaskId = randomUUID();
+    resolvePermission({
+      expectedTaskId: "_checkpoint",
+      notificationId,
+      behavior: "allow",
+      updatedInput: { answer: "Use durable evidence" },
+    });
+    state.pendingInteraction = {
+      ...state.pendingInteraction!,
+      resumeClaim: {
+        ownerId: "previous-process",
+        claimedAt: new Date(Date.now() - 60_000).toISOString(),
+        taskId: preallocatedTaskId,
+      },
+    };
+    state.stepStates[0] = {
+      ...state.stepStates[0],
+      status: "running",
+      taskId: preallocatedTaskId,
+    };
+    db.update(workflows)
+      .set({
+        definition: JSON.stringify({
+          pattern: "checkpoint",
+          steps: [
+            {
+              id: "input",
+              name: "Gather brief",
+              prompt: "Write the brief",
+              requiresInput: true,
+            },
+          ],
+          _state: state,
+        }),
+        status: "paused",
+        updatedAt: new Date(),
+      })
+      .where(eq(workflows.id, workflowId))
+      .run();
+
+    expect(await resumeWorkflowInteraction(workflowId)).toBe("resumed");
+    expect(readWorkflow(workflowId).status).toBe("completed");
+    expect(db.select().from(tasks).all()).toHaveLength(1);
+    expect(db.select().from(tasks).all()[0].id).toBe(preallocatedTaskId);
+    expect(dispatch.calls).toEqual([preallocatedTaskId]);
+  });
+
+  it("does not replay a running approved attempt found after process re-entry", async () => {
+    const workflowId = seedWorkflow({
+      definition: {
+        pattern: "checkpoint",
+        steps: [
+          {
+            id: "input",
+            name: "Gather brief",
+            prompt: "Write the brief",
+            requiresInput: true,
+          },
+        ],
+      },
+    });
+    await executeWorkflow(workflowId);
+    const state = readState(workflowId);
+    const notificationId = state.pendingInteraction!.notificationId;
+    const existingTaskId = randomUUID();
+    resolvePermission({
+      expectedTaskId: "_checkpoint",
+      notificationId,
+      behavior: "allow",
+      updatedInput: { answer: "Use durable evidence" },
+    });
+    db.insert(tasks)
+      .values({
+        id: existingTaskId,
+        workflowId,
+        workflowRunNumber: 1,
+        title: "[Workflow] Gather brief",
+        description: "already dispatched",
+        status: "running",
+        sourceType: "workflow",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .run();
+    state.pendingInteraction = {
+      ...state.pendingInteraction!,
+      resumeClaim: {
+        ownerId: "previous-process",
+        claimedAt: new Date(Date.now() - 60_000).toISOString(),
+        taskId: existingTaskId,
+      },
+    };
+    state.stepStates[0] = {
+      ...state.stepStates[0],
+      status: "running",
+      taskId: existingTaskId,
+    };
+    db.update(workflows)
+      .set({
+        definition: JSON.stringify({
+          pattern: "checkpoint",
+          steps: [
+            {
+              id: "input",
+              name: "Gather brief",
+              prompt: "Write the brief",
+              requiresInput: true,
+            },
+          ],
+          _state: state,
+        }),
+        status: "paused",
+        updatedAt: new Date(),
+      })
+      .where(eq(workflows.id, workflowId))
+      .run();
+
+    expect(await resumeWorkflowInteraction(workflowId)).toBe("interrupted");
+    expect(readWorkflow(workflowId).status).toBe("failed");
+    expect(db.select().from(tasks).all()).toHaveLength(1);
+    expect(db.select().from(tasks).all()[0]).toMatchObject({
+      id: existingTaskId,
+      status: "failed",
+      failureReason: "process_restart_interrupted",
+    });
+    expect(dispatch.calls).toEqual([]);
+  });
+
+  it("records an explicit checkpoint denial truthfully without dispatching the gated step", async () => {
+    const workflowId = seedWorkflow({
+      definition: {
+        pattern: "checkpoint",
+        steps: [
+          { id: "draft", name: "Draft", prompt: "Create the draft" },
+          {
+            id: "publish",
+            name: "Publish",
+            prompt: "Publish the approved draft",
+            requiresApproval: true,
+          },
+        ],
+      },
+    });
+
+    await executeWorkflow(workflowId);
+    const notificationId =
+      readState(workflowId).pendingInteraction!.notificationId;
+    // Simulate a concurrent run-number advance after this execution captured
+    // run 1. The denial event must remain attributed to the captured run.
+    db.update(workflows)
+      .set({ runNumber: 2, updatedAt: new Date() })
+      .where(eq(workflows.id, workflowId))
+      .run();
+    resolvePermission({
+      expectedTaskId: "_checkpoint",
+      notificationId,
+      behavior: "deny",
+    });
+
+    expect(
+      await resumeWorkflowInteraction(workflowId, notificationId)
+    ).toBe("denied");
+    expect(readWorkflow(workflowId).status).toBe("failed");
+    expect(readState(workflowId).stepStates[1]).toMatchObject({
+      status: "failed",
+      error: "Approval denied by user",
+    });
+    expect(
+      db
+        .select()
+        .from(agentLogs)
+        .where(eq(agentLogs.event, "approval_denied"))
+        .get()?.workflowRunNumber
+    ).toBe(1);
+    expect(dispatch.calls).toHaveLength(1);
   });
 });

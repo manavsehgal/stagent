@@ -159,7 +159,7 @@ clean checkouts satisfy the bundled-CLI integration-test prerequisite. The tag
 publish workflow calls the same reusable workflow and declares the external
 publication job dependent on it. Its clean publication runner then rebuilds
 artifacts and retains the customer-identical production `npx` smoke before
-npm/GitHub writes. The fresh-clone macOS/Windows Node/npm matrix remains
+npm/GitHub writes. The fresh-clone macOS/Windows/Linux Node/npm matrix remains
 separate because portability and install topology are not substitutes for the
 default regression suite.
 

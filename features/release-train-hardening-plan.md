@@ -47,7 +47,7 @@ because npm customer install integrity already owns historical G-114.
 
 - `.github/workflows/quality-gate.yml` is reusable with `workflow_call` and owns
   the full release quality contract.
-- `.github/workflows/fresh-clone-dev.yml` owns the supported macOS/Windows,
+- `.github/workflows/fresh-clone-dev.yml` owns the supported macOS/Windows/Linux,
   Node 22/24, npm 11/12 matrix and literal fresh-clone smoke.
 - `scripts/check-relay-cell-publication.mjs` and
   `scripts/lib/relay-cell-publication.mjs` own OCI policy/workflow validation.

@@ -33,6 +33,22 @@ function seedWorkflowQuestion(workflowId: string) {
   return id;
 }
 
+function seedWorkflowApproval(workflowId: string) {
+  const id = randomUUID();
+  db.insert(notifications)
+    .values({
+      id,
+      taskId: null,
+      type: "permission_required",
+      title: "Workflow checkpoint",
+      toolName: "WorkflowCheckpoint",
+      toolInput: JSON.stringify({ workflowId, stepName: "Publish" }),
+      createdAt: new Date(),
+    })
+    .run();
+  return id;
+}
+
 function invoke(notificationId: string) {
   return POST(
     new NextRequest("http://relay.test/api/tasks/_checkpoint/respond", {
@@ -81,5 +97,24 @@ describe("workflow input notification response", () => {
       code: "APPROVAL_ALREADY_RESOLVED",
     });
     expect(resumeInteraction).toHaveBeenCalledTimes(1);
+  });
+
+  it("continues an explicitly allowed workflow checkpoint after persistence", async () => {
+    const workflowId = randomUUID();
+    const notificationId = seedWorkflowApproval(workflowId);
+
+    const response = await POST(
+      new NextRequest("http://relay.test/api/tasks/_checkpoint/respond", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notificationId, behavior: "allow" }),
+      }),
+      { params: Promise.resolve({ id: "_checkpoint" }) }
+    );
+
+    expect(response.status).toBe(200);
+    await vi.waitFor(() => {
+      expect(resumeInteraction).toHaveBeenCalledWith(workflowId, notificationId);
+    });
   });
 });

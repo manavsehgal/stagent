@@ -87,7 +87,11 @@ export function OperationsReceiptHistory({
             const sourceHref = receipt.taskId
               ? `/monitor?taskId=${receipt.taskId}`
               : receipt.workflowId
-                ? `/workflows/${receipt.workflowId}`
+                ? `/workflows/${receipt.workflowId}${
+                    receipt.workflowRunNumber !== null
+                      ? `?run=${receipt.workflowRunNumber}#workflow-run-${receipt.workflowRunNumber}`
+                      : ""
+                  }`
                 : null;
             return (
               <li key={receipt.id} className="surface-card-muted rounded-lg border p-3">

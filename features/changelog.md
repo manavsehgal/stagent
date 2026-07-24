@@ -4,6 +4,24 @@
 
 ### Completed
 
+- `customer-onboarding-release-train` O7/O8 (G-132–G-138) — silence no longer
+  becomes a workflow approval denial; explicit allow allocates one durable task
+  identity and never automatically replays an interrupted live attempt.
+  Workflow details now render indexed, per-run bounded audits with visible
+  partial-history disclosure and exact receipt diagnostics. Only trusted
+  blueprint steps explicitly marked replay-safe can expose suffix resume;
+  chat-created workflows cannot self-assert that authority.
+  Blueprint Run keeps entered values visible behind an immediate accessible
+  progress status; detected global Codex sessions receive explicit import or
+  isolated sign-in guidance without becoming eligible; measured telemetry
+  height eliminates the stacked-rail seam. Relay also upgraded to
+  `better-sqlite3@13.0.1`, removed `prebuild-install` from production, changed
+  publish proof from a retired binding pathname to an actual SQLite query, and
+  expanded release preflight to six macOS/Windows/Linux Node/npm lanes.
+  Focused workflow/UI/database/Host/package checks, TypeScript, tokens,
+  install-debt, production build, real runtime-graph task, packed npm 11/12
+  installs, and isolated browser proof passed.
+
 - `release-train-hardening` (G-131; initially entered under the already-used
   G-114 ID) — implemented the exact-SHA `cell|host` candidate workflow,
   versioned 24-hour content-addressed receipts, fail-closed tag consumers,
@@ -48,6 +66,25 @@
   **Ollama ready**, and changed immediately to **Ollama unavailable** after a
   controlled failed provider test. This closes O6 and the Customer onboarding
   and first value release train.
+
+### Groomed
+
+- Reopened **Customer onboarding and first value** from the public
+  `orionfold-relay@0.46.3` operator walkthrough. G-133 owns explicit-only
+  workflow approval decisions; G-135 owns run-scoped workflow audit and receipt
+  diagnostics; G-134 completes safe failed-step resume; G-132 strengthens
+  Start-run pending feedback; G-136 explains detected-but-unadopted Codex
+  without weakening credential isolation; and G-137 fixes stacked shell-rail
+  geometry.
+- Groomed G-138 from G-115's now-activated Node 22 trigger. The goal proves
+  `better-sqlite3` 13 across native installation, migration, backup/recovery,
+  packaging, and supported platforms before removing the final accepted
+  `prebuild-install` warning.
+- Corrected the raw walkthrough diagnoses before grooming: Start run already
+  renders **Starting…** but needs a more prominent accessible status; global
+  Codex discovery is intentionally not runtime eligibility until explicit
+  isolated adoption; and the npm warning is accepted debt whose exit trigger,
+  rather than ownership, has changed.
 
 ## 2026-07-22
 

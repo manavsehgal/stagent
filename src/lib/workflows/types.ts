@@ -21,6 +21,11 @@ export interface WorkflowStep {
   /** Per-step runtime override — takes precedence over workflow.runtimeId and global settings */
   runtimeId?: string;
   /**
+   * Explicit author assertion that retrying this step is idempotent/read-only.
+   * Relay fails closed for exact-step recovery unless this is true.
+   */
+  replaySafe?: boolean;
+  /**
    * If set, this step is a pure time delay (not a task). Format: Nm|Nh|Nd|Nw
    * (1 minute to 30 days). When the engine reaches a delay step, the workflow
    * is marked paused with resume_at = now + delayDuration. The scheduler tick
@@ -203,9 +208,16 @@ export interface StepState {
   startedAt?: string;
   completedAt?: string;
   recovery?: StepRuntimeRecovery;
+  /** Computed status-API guidance; not persisted by the workflow engine. */
+  recoveryEligibility?: {
+    eligible: boolean;
+    reason: string;
+  };
 }
 
 export interface WorkflowState {
+  /** Immutable run identity captured when execution begins. */
+  executionRunNumber?: number;
   currentStepIndex: number;
   stepStates: StepState[];
   status: "running" | "completed" | "failed" | "paused";
@@ -214,11 +226,31 @@ export interface WorkflowState {
   /** Pre-flight cost estimate — advisory, populated before execution */
   costEstimate?: unknown;
   /** Durable correlation for a checkpoint input that survives process re-entry. */
-  pendingInteraction?: {
-    kind: "input";
-    stepIndex: number;
-    notificationId: string;
-  };
+  pendingInteraction?:
+    | {
+        kind: "input";
+        stepIndex: number;
+        notificationId: string;
+        /** Process-scoped durable claim; a new process may reclaim this gate. */
+        resumeClaim?: {
+          ownerId: string;
+          claimedAt: string;
+          /** Preallocated child attempt, persisted before its task row exists. */
+          taskId?: string;
+        };
+      }
+    | {
+        kind: "approval";
+        stepIndex: number;
+        notificationId: string;
+        /** Process-scoped durable claim; a new process may reclaim this gate. */
+        resumeClaim?: {
+          ownerId: string;
+          claimedAt: string;
+          /** Preallocated child attempt, persisted before its task row exists. */
+          taskId?: string;
+        };
+      };
 }
 
 export function createInitialState(definition: WorkflowDefinition): WorkflowState {
@@ -260,11 +292,50 @@ export interface StepWithState extends WorkflowStep {
  * Run-history summary row returned alongside every status response — counts
  * of tasks per workflow run number.
  */
+export interface WorkflowRunAuditTask {
+  id: string;
+  title: string;
+  status: string;
+  effectiveRuntimeId: string | null;
+  failureReason: string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  documents: Array<{ id: string; originalName: string }>;
+  events: Array<{
+    event: string;
+    timestamp: Date | string;
+  }>;
+}
+
+export interface WorkflowRunAuditApproval {
+  id: string;
+  title: string;
+  toolName: string | null;
+  decision: "allow" | "deny" | "pending" | "invalid";
+  createdAt: Date | string;
+  respondedAt: Date | string | null;
+}
+
+export interface WorkflowRunAuditEvent {
+  event: string;
+  timestamp: Date | string;
+}
+
 export interface WorkflowRunHistoryEntry {
-  runNumber: number | null;
+  runNumber: number;
+  startedAt: Date | string;
+  finishedAt: Date | string | null;
+  terminalStatus: "completed" | "failed" | null;
   taskCount: number;
   completedCount: number;
   failedCount: number;
+  tasks: WorkflowRunAuditTask[];
+  approvals: WorkflowRunAuditApproval[];
+  events: WorkflowRunAuditEvent[];
+  receiptIds: string[];
+  /** Explicit disclosure when a per-run evidence bound omitted records. */
+  omissions: string[];
+  currentStepStates?: StepState[];
 }
 
 export interface WorkflowOperationsReceipt {

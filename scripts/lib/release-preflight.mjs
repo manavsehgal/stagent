@@ -13,6 +13,8 @@ export const RELEASE_PREFLIGHT_LANES = [
   { id: "macos-node24-npm12", os: "macos", node: "24.15.0", npm: "12.0.1" },
   { id: "windows-node22-npm11", os: "windows", node: "22.23.1", npm: "11.6.0" },
   { id: "windows-node24-npm12", os: "windows", node: "24.15.0", npm: "12.0.1" },
+  { id: "linux-node22-npm11", os: "linux", node: "22.23.1", npm: "11.6.0" },
+  { id: "linux-node24-npm12", os: "linux", node: "24.15.0", npm: "12.0.1" },
 ];
 
 export const RELEASE_PREFLIGHT_POLICY_PATHS = [
@@ -263,7 +265,11 @@ export function validateReleaseReceipt(receipt, expected, { now = new Date(), al
   assert(now.valueOf() < expiresAt.valueOf(), "RELEASE_PREFLIGHT_RECEIPT_EXPIRED", `receipt expired at ${receipt.expiresAt}`);
 
   assert(Array.isArray(receipt?.lanes), "RELEASE_PREFLIGHT_LANE_MISSING", "receipt has no supported-lane evidence");
-  assert(receipt.lanes.length === RELEASE_PREFLIGHT_LANES.length, "RELEASE_PREFLIGHT_LANE_MISSING", "receipt does not contain exactly four supported lanes");
+  assert(
+    receipt.lanes.length === RELEASE_PREFLIGHT_LANES.length,
+    "RELEASE_PREFLIGHT_LANE_MISSING",
+    `receipt does not contain exactly ${RELEASE_PREFLIGHT_LANES.length} supported lanes`,
+  );
   for (const expectedLane of RELEASE_PREFLIGHT_LANES) {
     const lanes = receipt.lanes.filter((lane) => lane?.id === expectedLane.id);
     assert(lanes.length === 1, "RELEASE_PREFLIGHT_LANE_MISSING", `missing or duplicate lane ${expectedLane.id}`);

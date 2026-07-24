@@ -103,7 +103,7 @@ Included:
 - Contributor source setup documentation in the tracked README.
 - The tracked Codex secrets guard and its platform matrix.
 - Regression coverage for existing bootstrap and setup UI behavior.
-- A native macOS/Windows fresh-clone CI smoke using supported Node/npm.
+- A native macOS/Windows/Linux fresh-clone CI smoke using supported Node/npm.
 
 Excluded:
 

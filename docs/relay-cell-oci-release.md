@@ -109,7 +109,7 @@ stable digest, enforced as well as documented.
 
 Before an immutable `cell-vX.Y.Z` source tag exists, Relay's exact-SHA candidate
 workflow must produce a still-valid `cell` receipt for that commit, git tree,
-version, supported macOS/Windows Node/npm matrix, dependency policy, and
+version, supported macOS/Windows/Linux Node/npm matrix, dependency policy, and
 release-policy digest. The tag-triggered workflow revalidates that receipt
 before private staging. After both audited native candidates are staged, one
 protected `oci-production` decision gates the complete platform fan-out and

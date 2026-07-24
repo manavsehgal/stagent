@@ -33,6 +33,16 @@ import {
   classifyRecoverableRuntimeFailure,
   runtimeRecoveryMessage,
 } from "./runtime-recovery";
+import { getSequenceStepRecoveryEligibility } from "./recovery-eligibility";
+
+/**
+ * Process identity for durable checkpoint-resume claims.
+ *
+ * Relay's SQLite runtime has one owning server process. Duplicate callbacks in
+ * that process observe the same owner and exit. A replacement process gets a
+ * different owner and can reclaim a paused interaction after a restart.
+ */
+const WORKFLOW_RESUME_OWNER_ID = `${process.pid}:${crypto.randomUUID()}`;
 
 /**
  * Execute a workflow by advancing through its steps according to the pattern.
@@ -48,6 +58,7 @@ export async function executeWorkflow(workflowId: string): Promise<void> {
 
   const definition: WorkflowDefinition = JSON.parse(workflow.definition);
   const state = createInitialState(definition);
+  state.executionRunNumber = workflow.runNumber;
 
   // Extract parent task ID for document context propagation to child steps
   const parentTaskId: string | undefined = definition.sourceTaskId ?? undefined;
@@ -71,6 +82,8 @@ export async function executeWorkflow(workflowId: string): Promise<void> {
   await db.insert(agentLogs).values({
     id: crypto.randomUUID(),
     taskId: null,
+    workflowId,
+    workflowRunNumber: workflow.runNumber,
     agentType: "workflow-engine",
     event: "workflow_started",
     payload: JSON.stringify({
@@ -120,6 +133,8 @@ export async function executeWorkflow(workflowId: string): Promise<void> {
       await db.insert(agentLogs).values({
         id: crypto.randomUUID(),
         taskId: null,
+        workflowId,
+        workflowRunNumber: workflow.runNumber,
         agentType: "workflow-engine",
         event: terminalEvent,
         payload: JSON.stringify({
@@ -133,6 +148,8 @@ export async function executeWorkflow(workflowId: string): Promise<void> {
       await db.insert(agentLogs).values({
         id: crypto.randomUUID(),
         taskId: null,
+        workflowId,
+        workflowRunNumber: workflow.runNumber,
         agentType: "workflow-engine",
         event: "workflow_failed",
         payload: JSON.stringify({
@@ -178,15 +195,21 @@ export async function executeWorkflow(workflowId: string): Promise<void> {
     // without marking the workflow completed.
     if (state.status === "paused") {
       const waitingForInput = state.pendingInteraction?.kind === "input";
+      const waitingForApproval =
+        state.pendingInteraction?.kind === "approval";
       const blockedRuntime = state.stepStates.some(
         (step) => step.status === "blocked_runtime",
       );
       await db.insert(agentLogs).values({
         id: crypto.randomUUID(),
         taskId: null,
+        workflowId,
+        workflowRunNumber: workflow.runNumber,
         agentType: "workflow-engine",
         event: waitingForInput
           ? "workflow_paused_for_input"
+          : waitingForApproval
+            ? "workflow_paused_for_approval"
           : blockedRuntime
             ? "workflow_paused_for_runtime"
             : "workflow_paused_for_delay",
@@ -194,6 +217,7 @@ export async function executeWorkflow(workflowId: string): Promise<void> {
           workflowId,
           stepIndex: state.currentStepIndex,
           notificationId: state.pendingInteraction?.notificationId,
+          interactionKind: state.pendingInteraction?.kind,
           blockedRuntime,
         }),
         timestamp: new Date(),
@@ -208,6 +232,8 @@ export async function executeWorkflow(workflowId: string): Promise<void> {
     await db.insert(agentLogs).values({
       id: crypto.randomUUID(),
       taskId: null,
+      workflowId,
+      workflowRunNumber: workflow.runNumber,
       agentType: "workflow-engine",
       event: "workflow_completed",
       payload: JSON.stringify({ workflowId }),
@@ -220,6 +246,8 @@ export async function executeWorkflow(workflowId: string): Promise<void> {
     await db.insert(agentLogs).values({
       id: crypto.randomUUID(),
       taskId: null,
+      workflowId,
+      workflowRunNumber: workflow.runNumber,
       agentType: "workflow-engine",
       event: "workflow_failed",
       payload: JSON.stringify({
@@ -275,20 +303,18 @@ async function executeSequence(
         .update(workflows)
         .set({ resumeAt: delayCheck.resumeAt, updatedAt: new Date() })
         .where(eq(workflows.id, workflowId));
-      await db.insert(agentLogs).values({
-        id: crypto.randomUUID(),
-        taskId: null,
-        agentType: "workflow-engine",
-        event: "step_delayed",
-        payload: JSON.stringify({
+      await recordWorkflowAuditEvent(
+        workflowId,
+        "step_delayed",
+        {
           workflowId,
           stepId: step.id,
           stepName: step.name,
           delayDuration: step.delayDuration,
           resumeAt: delayCheck.resumeAt,
-        }),
-        timestamp: new Date(),
-      });
+        },
+        state.executionRunNumber
+      );
       return;
     }
 
@@ -395,7 +421,13 @@ async function executeCheckpoint(
   parentTaskId?: string,
   workflowRuntimeId?: string,
   fromStepIndex: number = 0,
-  resumedInput?: { stepIndex: number; answer: string }
+  resumedInput?: { stepIndex: number; answer: string },
+  resumedApprovalStepIndex?: number,
+  resumedTaskAttempt?: {
+    stepIndex: number;
+    taskId?: string;
+    onTaskAllocated?: (taskId: string) => Promise<void>;
+  }
 ): Promise<void> {
   let previousOutput =
     fromStepIndex > 0
@@ -411,17 +443,23 @@ async function executeCheckpoint(
     if (
       step.requiresApproval &&
       i > 0 &&
-      resumedInput?.stepIndex !== i
+      resumedApprovalStepIndex !== i
     ) {
       state.stepStates[i].status = "waiting_approval";
-      await updateWorkflowState(workflowId, state, "active");
-
-      const approved = await waitForApproval(workflowId, step.name, previousOutput);
-      if (!approved) {
-        state.stepStates[i].status = "failed";
-        state.stepStates[i].error = "Approval denied by user";
-        throw new Error(`Step "${step.name}" was denied approval`);
-      }
+      state.status = "paused";
+      const notificationId = await createWorkflowApprovalNotification(
+        workflowId,
+        step.name,
+        previousOutput,
+        state.executionRunNumber
+      );
+      state.pendingInteraction = {
+        kind: "approval",
+        stepIndex: i,
+        notificationId,
+      };
+      await updateWorkflowState(workflowId, state, "paused");
+      return;
     }
 
     // If a step needs data, persist the exact workflow/step/notification
@@ -434,7 +472,6 @@ async function executeCheckpoint(
         state.pendingInteraction = undefined;
         state.status = "running";
         state.stepStates[i].status = "running";
-        await updateWorkflowState(workflowId, state, "active");
       } else {
         const notificationId = await createWorkflowInputNotification(
           workflowId,
@@ -476,7 +513,14 @@ async function executeCheckpoint(
       parentTaskId,
       step.budgetUsd,
       step.runtimeId,
-      workflowRuntimeId
+      workflowRuntimeId,
+      false,
+      resumedTaskAttempt?.stepIndex === i
+        ? {
+            taskId: resumedTaskAttempt.taskId,
+            onTaskAllocated: resumedTaskAttempt.onTaskAllocated,
+          }
+        : undefined
     );
 
     if (result.status === "failed") {
@@ -1016,7 +1060,11 @@ export async function executeChildTask(
   parentTaskId?: string,
   stepId?: string,
   maxBudgetUsd?: number,
-  runtimeId?: string
+  runtimeId?: string,
+  recoveryAttempt?: {
+    taskId?: string;
+    onTaskAllocated?: (taskId: string) => Promise<void>;
+  },
 ): Promise<{
   taskId: string;
   status: string;
@@ -1084,7 +1132,8 @@ export async function executeChildTask(
     enrichedPrompt = `${poolContext}\n\n${enrichedPrompt}`;
   }
 
-  const taskId = crypto.randomUUID();
+  const taskId = recoveryAttempt?.taskId ?? crypto.randomUUID();
+  await recoveryAttempt?.onTaskAllocated?.(taskId);
   const effectiveMaxBudgetUsd =
     maxBudgetUsd !== undefined && scheduleBudgetPerRunUsd !== null
       ? Math.min(maxBudgetUsd, scheduleBudgetPerRunUsd)
@@ -1167,6 +1216,10 @@ async function executeStep(
   stepRuntimeId?: string,
   workflowRuntimeId?: string,
   allowTransientPause: boolean = false,
+  recoveryAttempt?: {
+    taskId?: string;
+    onTaskAllocated?: (taskId: string) => Promise<void>;
+  },
 ): Promise<StepState> {
   const stepState = state.stepStates.find((s) => s.stepId === stepId);
   if (!stepState) throw new Error(`Step ${stepId} not found in state`);
@@ -1176,14 +1229,17 @@ async function executeStep(
   stepState.startedAt = new Date().toISOString();
 
   // Log step_started event for live execution dashboard
-  await db.insert(agentLogs).values({
-    id: crypto.randomUUID(),
-    taskId: null,
-    agentType: "workflow-engine",
-    event: "step_started",
-    payload: JSON.stringify({ workflowId, stepId, stepName, stepIndex: state.currentStepIndex }),
-    timestamp: new Date(),
-  });
+  await recordWorkflowAuditEvent(
+    workflowId,
+    "step_started",
+    {
+      workflowId,
+      stepId,
+      stepName,
+      stepIndex: state.currentStepIndex,
+    },
+    state.executionRunNumber
+  );
 
   try {
     // Resolve per-step budget and runtime
@@ -1204,7 +1260,8 @@ async function executeStep(
       parentTaskId,
       stepId,
       budgetUsd,
-      resolvedRuntime
+      resolvedRuntime,
+      recoveryAttempt
     );
 
     stepState.taskId = result.taskId;
@@ -1343,18 +1400,29 @@ async function executeStep(
 }
 
 /**
- * Wait for human approval via the notifications system.
+ * Persist a checkpoint approval and return immediately.
+ *
+ * Silence is not a decision. The workflow state stores the notification
+ * identity and stays paused until an explicit allow/deny response is claimed
+ * by `resumeWorkflowInteraction`, including after a process restart.
  */
-async function waitForApproval(
+async function createWorkflowApprovalNotification(
   workflowId: string,
   stepName: string,
-  previousOutput: string
-): Promise<boolean> {
+  previousOutput: string,
+  executionRunNumber?: number
+): Promise<string> {
   const notificationId = crypto.randomUUID();
+  const [workflow] = await db
+    .select({ runNumber: workflows.runNumber })
+    .from(workflows)
+    .where(eq(workflows.id, workflowId));
 
   await db.insert(notifications).values({
     id: notificationId,
     taskId: null,
+    workflowId,
+    workflowRunNumber: executionRunNumber ?? workflow?.runNumber ?? null,
     type: "permission_required",
     title: `Workflow checkpoint: ${stepName}`,
     body: `Previous step output:\n${previousOutput.slice(0, 500)}`,
@@ -1362,40 +1430,14 @@ async function waitForApproval(
     toolInput: JSON.stringify({ workflowId, stepName }),
     createdAt: new Date(),
   });
+  await recordWorkflowAuditEvent(
+    workflowId,
+    "approval_requested",
+    undefined,
+    executionRunNumber
+  );
 
-  // Poll for response with 5-minute timeout for human approval
-  const deadline = Date.now() + 5 * 60 * 1000;
-  const pollInterval = 2000;
-
-  while (Date.now() < deadline) {
-    const [notification] = await db
-      .select()
-      .from(notifications)
-      .where(eq(notifications.id, notificationId));
-
-    if (notification?.response) {
-      try {
-        const parsed = JSON.parse(notification.response);
-        return parsed.behavior === "allow";
-      } catch {
-        return false;
-      }
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, pollInterval));
-  }
-
-  // Timeout — mark the notification as denied so it clears from pending list
-  await db
-    .update(notifications)
-    .set({
-      response: JSON.stringify({ behavior: "deny", message: "Timed out waiting for approval" }),
-      respondedAt: new Date(),
-      read: true,
-    })
-    .where(eq(notifications.id, notificationId));
-
-  return false; // Timeout — treat as denied
+  return notificationId;
 }
 
 /**
@@ -1420,10 +1462,16 @@ async function createWorkflowInputNotification(
   options?: string[]
 ): Promise<string> {
   const notificationId = crypto.randomUUID();
+  const [workflow] = await db
+    .select({ runNumber: workflows.runNumber })
+    .from(workflows)
+    .where(eq(workflows.id, workflowId));
 
   await db.insert(notifications).values({
     id: notificationId,
     taskId: null,
+    workflowId,
+    workflowRunNumber: workflow?.runNumber ?? null,
     type: "permission_required",
     title: `Workflow needs input: ${stepName}`,
     body: question.slice(0, 500),
@@ -1579,14 +1627,15 @@ export async function resumeWorkflow(workflowId: string): Promise<void> {
   state.status = "running";
   const resumeFromIndex = delayedIdx + 1;
 
-  await db.insert(agentLogs).values({
-    id: crypto.randomUUID(),
-    taskId: null,
-    agentType: "workflow-engine",
-    event: "workflow_resumed",
-    payload: JSON.stringify({ workflowId, resumeFromIndex }),
-    timestamp: new Date(),
-  });
+  await recordWorkflowAuditEvent(
+    workflowId,
+    "workflow_resumed",
+    {
+      workflowId,
+      resumeFromIndex,
+    },
+    state.executionRunNumber
+  );
 
   const parentTaskId = definition.sourceTaskId;
   const workflowRuntimeId = workflow.runtimeId ?? undefined;
@@ -1615,6 +1664,8 @@ export async function resumeWorkflow(workflowId: string): Promise<void> {
       await db.insert(agentLogs).values({
         id: crypto.randomUUID(),
         taskId: null,
+        workflowId,
+        workflowRunNumber: workflow.runNumber,
         agentType: "workflow-engine",
         event: "workflow_paused_for_delay",
         payload: JSON.stringify({
@@ -1633,6 +1684,8 @@ export async function resumeWorkflow(workflowId: string): Promise<void> {
     await db.insert(agentLogs).values({
       id: crypto.randomUUID(),
       taskId: null,
+      workflowId,
+      workflowRunNumber: workflow.runNumber,
       agentType: "workflow-engine",
       event: "workflow_completed",
       payload: JSON.stringify({ workflowId }),
@@ -1645,6 +1698,8 @@ export async function resumeWorkflow(workflowId: string): Promise<void> {
     await db.insert(agentLogs).values({
       id: crypto.randomUUID(),
       taskId: null,
+      workflowId,
+      workflowRunNumber: workflow.runNumber,
       agentType: "workflow-engine",
       event: "workflow_failed",
       payload: JSON.stringify({
@@ -1666,6 +1721,7 @@ export async function resumeWorkflow(workflowId: string): Promise<void> {
 export type WorkflowInteractionResumeResult =
   | "resumed"
   | "denied"
+  | "interrupted"
   | "not_ready";
 
 /**
@@ -1696,11 +1752,13 @@ export async function resumeWorkflowInteraction(
 
   const { definition, state } = parseWorkflowState(workflow.definition);
   const pending = state?.pendingInteraction;
-  if (!state || !pending || pending.kind !== "input") return "not_ready";
+  if (!state || !pending) return "not_ready";
+  const executionRunNumber =
+    state.executionRunNumber ?? workflow.runNumber;
   if (definition.pattern !== "checkpoint") {
     throw new WorkflowTransitionError(
       "WORKFLOW_STATE_INVALID",
-      `Workflow ${workflowId} has a persisted input gate outside a checkpoint pattern`
+      `Workflow ${workflowId} has a persisted interaction outside a checkpoint pattern`
     );
   }
   if (
@@ -1732,7 +1790,7 @@ export async function resumeWorkflowInteraction(
   } catch (error) {
     throw new WorkflowTransitionError(
       "WORKFLOW_STATE_INVALID",
-      `Workflow ${workflowId} has a malformed persisted input response`,
+      `Workflow ${workflowId} has a malformed persisted interaction response`,
       409,
       { cause: error }
     );
@@ -1740,15 +1798,19 @@ export async function resumeWorkflowInteraction(
 
   const stepState = state.stepStates[pending.stepIndex];
   const step = definition.steps[pending.stepIndex];
+  const hasPersistedAttempt =
+    Boolean(pending.resumeClaim?.taskId) &&
+    pending.resumeClaim?.taskId === stepState?.taskId &&
+    stepState?.status === "running";
   if (
     !step ||
     !stepState ||
     stepState.stepId !== step.id ||
-    stepState.status !== "waiting_approval"
+    (stepState.status !== "waiting_approval" && !hasPersistedAttempt)
   ) {
     throw new WorkflowTransitionError(
       "WORKFLOW_STATE_INVALID",
-      `Workflow ${workflowId} input gate does not match its persisted step`
+      `Workflow ${workflowId} interaction does not match its persisted step`
     );
   }
 
@@ -1757,7 +1819,10 @@ export async function resumeWorkflowInteraction(
     state.status = "failed";
     state.completedAt = new Date().toISOString();
     stepState.status = "failed";
-    stepState.error = "Input denied by user";
+    stepState.error =
+      pending.kind === "approval"
+        ? "Approval denied by user"
+        : "Input denied by user";
     stepState.completedAt = new Date().toISOString();
     const denied = await db
       .update(workflows)
@@ -1775,27 +1840,50 @@ export async function resumeWorkflowInteraction(
       )
       .returning();
     if (denied.length === 0) return "not_ready";
-    await updateWorkflowState(workflowId, state, "failed");
+    await ensureTerminalWorkflowReceipt(workflowId, executionRunNumber);
+    await recordWorkflowAuditEvent(
+      workflowId,
+      pending.kind === "approval" ? "approval_denied" : "input_denied",
+      undefined,
+      executionRunNumber
+    );
     return "denied";
   }
 
   const answer = response.updatedInput?.answer;
-  if (response.behavior !== "allow" || typeof answer !== "string") {
+  if (
+    response.behavior !== "allow" ||
+    (pending.kind === "input" && typeof answer !== "string")
+  ) {
     throw new WorkflowTransitionError(
       "WORKFLOW_STATE_INVALID",
-      `Workflow ${workflowId} input response does not contain an allowed answer`
+      pending.kind === "input"
+        ? `Workflow ${workflowId} input response does not contain an allowed answer`
+        : `Workflow ${workflowId} approval response is not allowed`
     );
   }
 
-  state.pendingInteraction = undefined;
-  state.status = "running";
-  stepState.status = "running";
-  const claimedDefinition = JSON.stringify({ ...definition, _state: state });
+  if (pending.resumeClaim?.ownerId === WORKFLOW_RESUME_OWNER_ID) {
+    return "not_ready";
+  }
+
+  const claimedAt = new Date().toISOString();
+  state.pendingInteraction = {
+    ...pending,
+    resumeClaim: {
+      ownerId: WORKFLOW_RESUME_OWNER_ID,
+      claimedAt,
+      taskId: pending.resumeClaim?.taskId,
+    },
+  };
+  let claimedDefinition = JSON.stringify({ ...definition, _state: state });
   const claimed = await db
     .update(workflows)
     .set({
       definition: claimedDefinition,
-      status: "active",
+      // Stay paused until the resumed step has a durable terminal task. If the
+      // process exits first, a replacement process can reclaim this gate.
+      status: "paused",
       updatedAt: new Date(),
     })
     .where(
@@ -1808,16 +1896,126 @@ export async function resumeWorkflowInteraction(
     .returning();
   if (claimed.length === 0) return "not_ready";
 
-  openLearningSession(workflowId);
+  const claimedTaskId = pending.resumeClaim?.taskId;
+  const claimedTask = claimedTaskId
+    ? await db
+        .select()
+        .from(tasks)
+        .where(eq(tasks.id, claimedTaskId))
+        .then((rows) => rows[0])
+    : undefined;
+
+  state.pendingInteraction = undefined;
+  state.status = "running";
+  stepState.status = "running";
+
+  let resumeFromStepIndex = pending.stepIndex;
+  if (claimedTask?.status === "completed") {
+    stepState.taskId = claimedTask.id;
+    stepState.status = "completed";
+    stepState.result = claimedTask.result ?? "";
+    stepState.completedAt = claimedTask.updatedAt.toISOString();
+    resumeFromStepIndex = pending.stepIndex + 1;
+  } else if (claimedTask) {
+    const interruptedMessage =
+      claimedTask.status === "failed"
+        ? claimedTask.result ?? "The approved step failed before Relay could reconcile it."
+        : "Relay restarted while this approved step was running. The existing attempt was stopped and was not replayed automatically.";
+    if (claimedTask.status !== "failed") {
+      await db
+        .update(tasks)
+        .set({
+          status: "failed",
+          result: interruptedMessage,
+          failureReason: "process_restart_interrupted",
+          updatedAt: new Date(),
+        })
+        .where(eq(tasks.id, claimedTask.id));
+    }
+    state.status = "failed";
+    state.completedAt = new Date().toISOString();
+    stepState.taskId = claimedTask.id;
+    stepState.status = "failed";
+    stepState.error = interruptedMessage;
+    stepState.completedAt = new Date().toISOString();
+    await updateWorkflowState(workflowId, state, "failed");
+    await recordWorkflowAuditEvent(
+      workflowId,
+      "interaction_resume_interrupted",
+      undefined,
+      executionRunNumber
+    );
+    return "interrupted";
+  }
+
+  const persistAttemptIdentity = async (taskId: string) => {
+    const recoveryState = structuredClone(state);
+    recoveryState.status = "paused";
+    recoveryState.pendingInteraction = {
+      ...pending,
+      resumeClaim: {
+        ownerId: WORKFLOW_RESUME_OWNER_ID,
+        claimedAt,
+        taskId,
+      },
+    };
+    recoveryState.stepStates[pending.stepIndex] = {
+      ...recoveryState.stepStates[pending.stepIndex],
+      taskId,
+      status: "running",
+    };
+    const nextDefinition = JSON.stringify({
+      ...definition,
+      _state: recoveryState,
+    });
+    const persisted = await db
+      .update(workflows)
+      .set({ definition: nextDefinition, updatedAt: new Date() })
+      .where(
+        and(
+          eq(workflows.id, workflowId),
+          eq(workflows.status, "paused"),
+          eq(workflows.definition, claimedDefinition)
+        )
+      )
+      .returning();
+    if (persisted.length === 0) {
+      throw new WorkflowTransitionError(
+        "WORKFLOW_TRANSITION_CONFLICT",
+        "The workflow changed before its approved task attempt was recorded"
+      );
+    }
+    claimedDefinition = nextDefinition;
+  };
+
   try {
+    await recordWorkflowAuditEvent(
+      workflowId,
+      pending.kind === "approval" ? "approval_allowed" : "input_answered",
+      undefined,
+      executionRunNumber
+    );
+    openLearningSession(workflowId);
     await executeCheckpoint(
       workflowId,
       definition,
       state,
       definition.sourceTaskId,
       workflow.runtimeId ?? undefined,
-      pending.stepIndex,
-      { stepIndex: pending.stepIndex, answer }
+      resumeFromStepIndex,
+      resumeFromStepIndex === pending.stepIndex && pending.kind === "input"
+        ? { stepIndex: pending.stepIndex, answer: answer as string }
+        : undefined,
+      resumeFromStepIndex === pending.stepIndex && pending.kind === "approval"
+        ? pending.stepIndex
+        : undefined,
+      resumeFromStepIndex === pending.stepIndex
+        ? {
+            stepIndex: pending.stepIndex,
+            taskId: claimedTaskId,
+            onTaskAllocated: persistAttemptIdentity,
+          }
+        : undefined
     );
 
     if ((state.status as WorkflowState["status"]) === "paused") {
@@ -1833,6 +2031,8 @@ export async function resumeWorkflowInteraction(
     await db.insert(agentLogs).values({
       id: crypto.randomUUID(),
       taskId: null,
+      workflowId,
+      workflowRunNumber: workflow.runNumber,
       agentType: "workflow-engine",
       event: "workflow_failed",
       payload: JSON.stringify({
@@ -1935,6 +2135,17 @@ export async function retryWorkflowStep(
     );
   }
 
+  const targetStep = definition.steps[stepIndex];
+  if (
+    definition.pattern === "sequence" &&
+    (targetStep.replaySafe !== true || targetStep.postAction)
+  ) {
+    throw new WorkflowTransitionError(
+      "WORKFLOW_TRANSITION_CONFLICT",
+      "Relay cannot prove this step is idempotent or read-only, so it will not replay it automatically."
+    );
+  }
+
   let claimedRecovery = stepState.recovery;
   if (isRuntimeRecovery) {
     if (definition.pattern !== "sequence" || !claimedRecovery) {
@@ -1950,7 +2161,6 @@ export async function retryWorkflowStep(
       );
     }
 
-    const targetStep = definition.steps[stepIndex];
     try {
       const { resolveWorkflowExecutionTargets } = await import(
         "@/lib/workflows/execution-targets"
@@ -2024,6 +2234,36 @@ export async function retryWorkflowStep(
       lastHealthCheck: "available",
       lastHealthMessage: undefined,
     };
+  } else if (definition.pattern === "sequence") {
+    const eligibility = getSequenceStepRecoveryEligibility({
+      definition,
+      state,
+      stepIndex,
+    });
+    if (!eligibility.eligible) {
+      throw new WorkflowTransitionError(
+        "WORKFLOW_TRANSITION_CONFLICT",
+        eligibility.reason
+      );
+    }
+    try {
+      const { resolveWorkflowExecutionTargets } = await import(
+        "@/lib/workflows/execution-targets"
+      );
+      await resolveWorkflowExecutionTargets({
+        definition: { pattern: "sequence", steps: [targetStep] },
+        workflowRuntimeId: workflow.runtimeId,
+      });
+    } catch (error) {
+      throw new WorkflowTransitionError(
+        "WORKFLOW_TRANSITION_CONFLICT",
+        `The failed step is safe to resume, but its execution target is not ready: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        409,
+        { cause: error }
+      );
+    }
   }
 
   if (definition.pattern === "sequence") {
@@ -2055,6 +2295,12 @@ export async function retryWorkflowStep(
       "Workflow retry was already claimed"
     );
   }
+  await recordWorkflowAuditEvent(
+    workflowId,
+    "workflow_step_retry_started",
+    undefined,
+    state.executionRunNumber ?? workflow.runNumber
+  );
 
   void runClaimedWorkflowStepRetry(
     workflowId,
@@ -2072,6 +2318,12 @@ export async function retryWorkflowStep(
     }
     try {
       await updateWorkflowState(workflowId, state, "failed");
+      await recordWorkflowAuditEvent(
+        workflowId,
+        "workflow_step_retry_failed",
+        undefined,
+        state.executionRunNumber ?? workflow.runNumber
+      );
     } catch (persistError) {
       console.error(
         `[workflow-engine] Failed to persist retry failure for ${workflowId}:`,
@@ -2158,6 +2410,14 @@ async function runClaimedWorkflowStepRetry(
       ? "paused"
       : "failed";
   state.completedAt = allCompleted ? new Date().toISOString() : undefined;
+  await recordWorkflowAuditEvent(
+    workflowId,
+    allCompleted
+      ? "workflow_step_retry_completed"
+      : "workflow_step_retry_failed",
+    undefined,
+    state.executionRunNumber
+  );
   await updateWorkflowState(
     workflowId,
     state,
@@ -2319,6 +2579,29 @@ async function retrySwarmStep(
   state.status = "completed";
   state.completedAt = new Date().toISOString();
   await updateWorkflowState(workflowId, state, "completed");
+}
+
+async function recordWorkflowAuditEvent(
+  workflowId: string,
+  event: string,
+  payload?: unknown,
+  executionRunNumber?: number
+): Promise<void> {
+  const [workflow] = await db
+    .select({ runNumber: workflows.runNumber })
+    .from(workflows)
+    .where(eq(workflows.id, workflowId));
+  if (!workflow) return;
+  await db.insert(agentLogs).values({
+    id: crypto.randomUUID(),
+    taskId: null,
+    workflowId,
+    workflowRunNumber: executionRunNumber ?? workflow.runNumber,
+    agentType: "workflow-engine",
+    event,
+    payload: payload === undefined ? null : JSON.stringify(payload),
+    timestamp: new Date(),
+  });
 }
 
 async function mapWithConcurrency<T, TResult>(

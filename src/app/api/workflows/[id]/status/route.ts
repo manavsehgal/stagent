@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { workflows, tasks, documents, workflowReceiptRuns, projects } from "@/lib/db/schema";
-import { eq, and, inArray, count, desc, getTableColumns, sql as drizzleSql } from "drizzle-orm";
+import { eq, and, inArray, count, desc, getTableColumns } from "drizzle-orm";
 import { parseWorkflowState } from "@/lib/workflows/engine";
 import type {
   WorkflowStatusResponse,
@@ -12,6 +12,8 @@ import {
   ensureWorkflowReceipt,
   listWorkflowReceipts,
 } from "@/lib/operations/receipts";
+import { listWorkflowRunAudit } from "@/lib/workflows/run-audit";
+import { withRecoveryEligibility } from "@/lib/workflows/recovery-eligibility";
 
 /** Collect output documents for workflow step tasks + input documents from parent task */
 async function getWorkflowDocuments(
@@ -94,18 +96,6 @@ export async function GET(
     return NextResponse.json({ error: "Workflow not found" }, { status: 404 });
   }
 
-  const runHistory = await db
-    .select({
-      runNumber: tasks.workflowRunNumber,
-      taskCount: count(tasks.id),
-      completedCount: drizzleSql<number>`SUM(CASE WHEN ${tasks.status} = 'completed' THEN 1 ELSE 0 END)`,
-      failedCount: drizzleSql<number>`SUM(CASE WHEN ${tasks.status} = 'failed' THEN 1 ELSE 0 END)`,
-    })
-    .from(tasks)
-    .where(eq(tasks.workflowId, id))
-    .groupBy(tasks.workflowRunNumber)
-    .orderBy(desc(tasks.workflowRunNumber));
-
   const [{ liveTaskCount = 0 } = { liveTaskCount: 0 }] = await db
     .select({ liveTaskCount: count(tasks.id) })
     .from(tasks)
@@ -117,6 +107,11 @@ export async function GET(
     );
 
   const { definition, state, loopState } = parseWorkflowState(workflow.definition);
+  const runHistory = await listWorkflowRunAudit({
+    workflowId: workflow.id,
+    currentRunNumber: workflow.runNumber,
+    currentStepStates: state?.stepStates,
+  });
   const sourceTaskId: string | undefined = definition.sourceTaskId;
   const { stepDocuments, parentDocuments } = await getWorkflowDocuments(state, sourceTaskId);
   const receiptReconciliationErrors: string[] = [];
@@ -190,7 +185,12 @@ export async function GET(
     swarmConfig: definition.swarmConfig,
     steps: definition.steps.map((step, i): StepWithState => ({
       ...step,
-      state: state?.stepStates[i] ?? { stepId: step.id, status: "pending" },
+      state: withRecoveryEligibility(
+        definition,
+        state,
+        i,
+        state?.stepStates[i] ?? { stepId: step.id, status: "pending" }
+      ),
     })),
     workflowState: state,
     liveTaskCount,

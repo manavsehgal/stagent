@@ -10,7 +10,7 @@ import {
   type ResolvedExecutionTarget,
 } from "./execution-target";
 import type {
-  ExecutionTargetErrorCode,
+  ExecutionTargetPreviewResponse,
   ExecutionTargetPreviewItem,
 } from "./execution-target-contract";
 
@@ -44,17 +44,38 @@ export function toExecutionTargetPreviewItem(input: {
   };
 }
 
-export function classifyExecutionTargetError(error: unknown): {
-  code: ExecutionTargetErrorCode;
-  message: string;
-} {
+export function classifyExecutionTargetError(
+  error: unknown
+): NonNullable<ExecutionTargetPreviewResponse["error"]> {
   const message = error instanceof Error ? error.message : String(error);
   const cause = error instanceof Error && error.cause ? error.cause : error;
+  const actions =
+    cause instanceof RuntimeUnavailableError ||
+    cause instanceof NoEligibleRuntimeError
+      ? Array.from(
+          new Map(
+            cause.skippedRuntimes
+              .filter(
+                (
+                  skip
+                ): skip is typeof skip & {
+                  actionHref: string;
+                  actionLabel: string;
+                } => !!skip.actionHref && !!skip.actionLabel
+              )
+              .map((skip) => [
+                `${skip.actionHref}\u0000${skip.actionLabel}`,
+                { href: skip.actionHref, label: skip.actionLabel },
+              ])
+          ).values()
+        )
+      : [];
+  const withActions = actions.length > 0 ? { actions } : {};
   if (cause instanceof RuntimeCapabilityMismatchError) {
     return { code: "runtime_capability_mismatch", message };
   }
   if (cause instanceof RuntimeUnavailableError) {
-    return { code: "runtime_unavailable", message };
+    return { code: "runtime_unavailable", message, ...withActions };
   }
   if (cause instanceof RequestedModelUnavailableError) {
     return { code: "model_unavailable", message };
@@ -66,7 +87,7 @@ export function classifyExecutionTargetError(error: unknown): {
     return { code: "empty_eligible_runtime_pool", message };
   }
   if (cause instanceof NoEligibleRuntimeError) {
-    return { code: "no_eligible_runtime", message };
+    return { code: "no_eligible_runtime", message, ...withActions };
   }
   if (
     cause instanceof Error &&

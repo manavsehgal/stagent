@@ -362,6 +362,12 @@ test("workflow contract is always-on, reusable, read-only, and release-blocking"
   assert.match(publishSource, /node scripts\/npx-prod-smoke\.mjs/);
   assert.equal(Object.hasOwn(freshClone.on, "pull_request"), true);
   assert.ok(freshClone.on.pull_request.paths.length > 0);
+  const portableSetup = freshClone.jobs["fresh-clone"].steps.find(
+    (step) => step.name === "Replay README setup (macOS and Linux)"
+  );
+  assert.equal(portableSetup?.if, "runner.os != 'Windows'");
+  assert.match(portableSetup?.run ?? "", /cat > \.env\.local/);
+  assert.match(portableSetup?.run ?? "", /touch \.git\/relay-dev-mode/);
 });
 
 test("required quality scripts use installed tools without opportunistic npx downloads", () => {

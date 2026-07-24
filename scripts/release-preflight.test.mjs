@@ -86,12 +86,14 @@ test("publication refuses missing, stale, mismatched, and dry-run evidence", () 
   assert.equal(validateReleaseReceipt(dryRun, expected(), { now, allowDryRun: true }), dryRun);
 });
 
-test("all four macOS/Windows Node/npm lanes are exact and terminal green", () => {
+test("all six macOS/Windows/Linux Node/npm lanes are exact and terminal green", () => {
   assert.deepEqual(RELEASE_PREFLIGHT_LANES.map((lane) => lane.id), [
     "macos-node22-npm11",
     "macos-node24-npm12",
     "windows-node22-npm11",
     "windows-node24-npm12",
+    "linux-node22-npm11",
+    "linux-node24-npm12",
   ]);
   const missing = receipt();
   missing.lanes.pop();

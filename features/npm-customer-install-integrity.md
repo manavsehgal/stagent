@@ -1,6 +1,6 @@
 ---
 title: npm Customer Install Integrity
-status: in-progress
+status: completed
 priority: P0
 milestone: post-mvp
 source: _IDEAS/triage.md

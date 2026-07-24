@@ -128,16 +128,21 @@ export function bootstrapAinativeDatabase(sqlite: Database.Database): void {
     CREATE TABLE IF NOT EXISTS agent_logs (
       id TEXT PRIMARY KEY NOT NULL,
       task_id TEXT,
+      workflow_id TEXT,
+      workflow_run_number INTEGER,
       agent_type TEXT NOT NULL,
       event TEXT NOT NULL,
       payload TEXT,
       timestamp INTEGER NOT NULL,
-      FOREIGN KEY (task_id) REFERENCES tasks(id) ON UPDATE NO ACTION ON DELETE NO ACTION
+      FOREIGN KEY (task_id) REFERENCES tasks(id) ON UPDATE NO ACTION ON DELETE NO ACTION,
+      FOREIGN KEY (workflow_id) REFERENCES workflows(id) ON UPDATE NO ACTION ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS notifications (
       id TEXT PRIMARY KEY NOT NULL,
       task_id TEXT,
+      workflow_id TEXT,
+      workflow_run_number INTEGER,
       type TEXT NOT NULL,
       title TEXT NOT NULL,
       body TEXT,
@@ -147,7 +152,8 @@ export function bootstrapAinativeDatabase(sqlite: Database.Database): void {
       response TEXT,
       responded_at INTEGER,
       created_at INTEGER NOT NULL,
-      FOREIGN KEY (task_id) REFERENCES tasks(id) ON UPDATE NO ACTION ON DELETE NO ACTION
+      FOREIGN KEY (task_id) REFERENCES tasks(id) ON UPDATE NO ACTION ON DELETE NO ACTION,
+      FOREIGN KEY (workflow_id) REFERENCES workflows(id) ON UPDATE NO ACTION ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS settings (
@@ -1129,6 +1135,10 @@ export function bootstrapAinativeDatabase(sqlite: Database.Database): void {
     "ALTER TABLE customers ADD COLUMN sample_source TEXT",
     "ALTER TABLE customers ADD COLUMN sample_state TEXT",
     "ALTER TABLE customers ADD COLUMN sample_seed_hash TEXT",
+    "ALTER TABLE notifications ADD COLUMN workflow_id TEXT REFERENCES workflows(id) ON DELETE CASCADE",
+    "ALTER TABLE notifications ADD COLUMN workflow_run_number INTEGER",
+    "ALTER TABLE agent_logs ADD COLUMN workflow_id TEXT REFERENCES workflows(id) ON DELETE CASCADE",
+    "ALTER TABLE agent_logs ADD COLUMN workflow_run_number INTEGER",
   ]) {
     try { sqlite.exec(alter); } catch { /* column already exists — expected */ }
   }
@@ -1140,6 +1150,10 @@ export function bootstrapAinativeDatabase(sqlite: Database.Database): void {
   sqlite.exec(`
     CREATE UNIQUE INDEX IF NOT EXISTS idx_user_table_rows_table_data_hash
       ON user_table_rows(table_id, data_hash) WHERE data_hash IS NOT NULL;
+    CREATE INDEX IF NOT EXISTS idx_notifications_workflow_run
+      ON notifications(workflow_id, workflow_run_number);
+    CREATE INDEX IF NOT EXISTS idx_agent_logs_workflow_run
+      ON agent_logs(workflow_id, workflow_run_number);
   `);
 }
 

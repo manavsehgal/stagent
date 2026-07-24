@@ -135,6 +135,43 @@ auth-only global indicator with provider-neutral runtime readiness. A rebuilt
 packed npm/Chrome sweep accepted both states on 2026-07-23, so O6 and the
 release train are complete.
 
+### O7 — Workflow supervision, audit, and recovery
+
+The public `0.46.3` operator walkthrough reopened the train with behavior after
+the first successful steps. G-133 first removes the legacy five-minute
+approval-to-denial conversion. G-135 then makes persisted tasks, logs, attempts,
+documents, approvals, and Operations Receipts auditable by workflow run.
+G-134 completes the safe resume affordance for trusted-blueprint steps that
+explicitly assert replay safety and have an eligible failed suffix, without
+replaying a completed prefix.
+
+The same walkthrough corrected two presentation diagnoses. G-132 strengthens
+the existing **Starting…** button state into a persistent accessible in-panel
+status. G-136 keeps G-129's explicit Codex adoption boundary and explains it at
+the execution target instead of treating a detected global login as connected.
+G-137 removes the shell seam caused by estimated sticky-rail geometry.
+
+O7 was accepted 2026-07-23. G-133 removed silence-as-denial and made checkpoint
+decisions durable and explicit-only. G-135 added indexed run identity, bounded
+workflow audit history with explicit partial-history disclosure, and exact-run
+receipt diagnostics. G-134 exposed suffix-only resume for explicitly
+replay-safe sequence failures while chat-created and unsupported steps fail
+closed. G-132, G-136, and G-137 completed the accessible Start progress,
+explicit Codex adoption guidance, and measured gap-free shell geometry.
+
+### O8 — Clean Node 22 native install
+
+G-138 consumes G-115's now-activated Node 22 trigger: prove
+`better-sqlite3` 13 across the supported native/platform/database lifecycle,
+then remove the last packed `prebuild-install` deprecation path. O8 is
+independently releasable and must not trade database/platform reliability for a
+quiet npm transcript.
+
+O8 was accepted 2026-07-23 with `better-sqlite3@13.0.1`, a warning-free
+production closure, packed npm 11/12 proof, database/Host/CLI/build regressions,
+and a six-lane macOS/Windows/Linux release-preflight contract. The Customer
+onboarding and first value release train is complete.
+
 ## Cross-goal invariants
 
 - Displayed version, running bytes, package metadata and downloaded artifact
@@ -184,6 +221,16 @@ release train are complete.
       (G-128).
 - [x] One rebuilt packed-Chrome sweep closes TRIAGE-058/TRIAGE-059 and the O6
       release gate without regressing the accepted O5 journey.
+- [x] Unanswered workflow approvals remain pending until an explicit user
+      decision and survive restart without duplicate dispatch (G-133).
+- [x] Workflow details expose one run-scoped audit history and receipt
+      diagnostics never link to the unchanged current page (G-135).
+- [x] Eligible failed steps resume without replaying completed prefix work;
+      unsupported side effects fail closed (G-134).
+- [x] Start-run progress, detected Codex adoption guidance, and stacked shell
+      rail geometry are clear and accessible (G-132, G-136, G-137).
+- [x] The supported Node 22 package uses a proved native SQLite path without
+      the accepted `prebuild-install` warning (G-138).
 
 ## Scope boundaries
 
@@ -214,3 +261,7 @@ release train are complete.
 - `features/npm-customer-install-integrity.md`
 - `features/entitlement-aware-customer-onboarding.md`
 - `features/runtime-first-value-reliability.md`
+- `output/staging/2026-07-23-operator-walkthrough/EVALUATION.md`
+- `features/workflow-supervision-and-recovery.md`
+- `features/first-run-feedback-and-runtime-guidance.md`
+- `features/better-sqlite3-13-native-upgrade.md`

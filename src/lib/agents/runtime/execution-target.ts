@@ -48,8 +48,18 @@ const CHAT_MODEL_FALLBACKS: Record<string, string[]> = {
   "gpt-5.4": ["opus", "sonnet", "haiku"],
 };
 
+export interface RuntimeSelectionSkip {
+  runtimeId: AgentRuntimeId;
+  reason: string;
+  actionHref?: string;
+  actionLabel?: string;
+}
+
 export class RuntimeUnavailableError extends Error {
-  constructor(message: string) {
+  constructor(
+    message: string,
+    readonly skippedRuntimes: RuntimeSelectionSkip[] = []
+  ) {
     super(message);
     this.name = "RuntimeUnavailableError";
   }
@@ -84,7 +94,10 @@ export class EmptyEligibleRuntimePoolError extends Error {
 }
 
 export class NoEligibleRuntimeError extends Error {
-  constructor(message: string) {
+  constructor(
+    message: string,
+    readonly skippedRuntimes: RuntimeSelectionSkip[] = []
+  ) {
     super(message);
     this.name = "NoEligibleRuntimeError";
   }
@@ -139,11 +152,6 @@ export interface ResolvedExecutionTarget {
   automaticFallbackEnabled?: boolean;
   consideredRuntimeIds?: AgentRuntimeId[];
   skippedRuntimes?: RuntimeSelectionSkip[];
-}
-
-export interface RuntimeSelectionSkip {
-  runtimeId: AgentRuntimeId;
-  reason: string;
 }
 
 type RuntimeRequirements = {
@@ -543,9 +551,18 @@ export async function resolveTaskExecutionTarget(input: {
   const launchableCandidates: AgentRuntimeId[] = [];
   for (const runtimeId of routing.policy.eligibleRuntimeIds) {
     if (!states[runtimeId]?.configured) {
+      const guidance = states[runtimeId]?.setupGuidance;
       skippedRuntimes.push({
         runtimeId,
-        reason: `${getRuntimeLabel(runtimeId)} is not configured`,
+        reason:
+          guidance?.message ??
+          `${getRuntimeLabel(runtimeId)} is not configured`,
+        ...(guidance
+          ? {
+              actionHref: guidance.href,
+              actionLabel: guidance.actionLabel,
+            }
+          : {}),
       });
       continue;
     }
@@ -584,6 +601,7 @@ export async function resolveTaskExecutionTarget(input: {
       detail
         ? `No eligible runtime can execute this task. ${detail}`
         : "No eligible runtime can execute this task.",
+      skippedRuntimes,
     );
   }
 
@@ -643,6 +661,7 @@ export async function resolveTaskExecutionTarget(input: {
     routing.policy.automaticFallback
       ? `No healthy runtime is currently available in the eligible pool. ${skippedRuntimes.map((skip) => skip.reason).join("; ")}`
       : `${skippedRuntimes.at(-1)?.reason ?? `${getRuntimeLabel(suggested)} is unavailable`}. Automatic fallback is disabled.`,
+    skippedRuntimes,
   );
 }
 

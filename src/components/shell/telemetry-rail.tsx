@@ -164,28 +164,44 @@ export function TelemetryRail() {
     });
   }, []);
 
+  const publishRailGeometry = useCallback(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const height = rail.getBoundingClientRect().height;
+    if (!Number.isFinite(height) || height <= 0) return;
+    document.documentElement.style.setProperty(
+      "--chrome-rail-measured",
+      `${height}px`
+    );
+  }, []);
+
+  const updateRailState = useCallback(() => {
+    updateScrollState();
+    publishRailGeometry();
+  }, [publishRailGeometry, updateScrollState]);
+
   useEffect(() => {
     const rail = railRef.current;
     const element = scrollRef.current;
     if (!rail || !element) return;
 
-    updateScrollState();
-    window.addEventListener("resize", updateScrollState);
+    updateRailState();
+    window.addEventListener("resize", updateRailState);
 
     if (typeof ResizeObserver === "undefined") {
-      return () => window.removeEventListener("resize", updateScrollState);
+      return () => window.removeEventListener("resize", updateRailState);
     }
 
-    const observer = new ResizeObserver(updateScrollState);
+    const observer = new ResizeObserver(updateRailState);
     observer.observe(rail);
     observer.observe(element);
     for (const child of element.children) observer.observe(child);
 
     return () => {
       observer.disconnect();
-      window.removeEventListener("resize", updateScrollState);
+      window.removeEventListener("resize", updateRailState);
     };
-  }, [updateScrollState]);
+  }, [updateRailState]);
 
   const move = useCallback(
     (direction: "previous" | "next") => {

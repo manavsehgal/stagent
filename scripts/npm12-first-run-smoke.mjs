@@ -1,9 +1,10 @@
-// Customer-identical npm 12 native-binding recovery smoke (G-011).
+// Customer-identical npm 12 native-binding compatibility smoke (G-011/G-138).
 //
 // Run under a Node/npm pair supported by npm 12 (CI uses Node 24.15 and npm
 // 12.0.1). This packs Relay, installs it into an isolated project whose root
-// does NOT approve dependency scripts, proves the SQLite binding is absent,
-// then invokes the real bundled CLI and verifies its scoped repair.
+// does NOT approve dependency scripts, then invokes the real bundled CLI.
+// better-sqlite3 13 must load its packaged platform prebuild without a false
+// repair claim; the retained v12 branch still proves Relay's scoped repair.
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -68,7 +69,7 @@ try {
   );
 
   const installedModules = path.join(workDir, "node_modules");
-  const bindingPath = path.join(
+  const legacyBindingPath = path.join(
     installedModules,
     "better-sqlite3",
     "build",
@@ -76,8 +77,18 @@ try {
     "better_sqlite3.node",
   );
   assert(
-    !existsSync(bindingPath),
-    "fixture did not reproduce npm 12's blocked install-script state; better-sqlite3 binding already exists",
+    !existsSync(legacyBindingPath),
+    "fixture did not reproduce npm 12's blocked legacy install-script state",
+  );
+  const betterSqlitePackage = JSON.parse(
+    readFileSync(
+      path.join(installedModules, "better-sqlite3", "package.json"),
+      "utf8",
+    ),
+  );
+  const betterSqliteMajor = Number.parseInt(
+    String(betterSqlitePackage.version).split(".")[0] ?? "0",
+    10,
   );
 
   const cliPath = path.join(installedModules, packageName, "dist", "cli.js");
@@ -100,16 +111,33 @@ try {
   // Port 0 is deliberately rejected immediately after the native preflight;
   // it keeps this fixture bounded without launching a Next.js child.
   assert(launch.status !== 0, "port-0 sentinel should stop the CLI after preflight");
-  assert(
-    /detected that the better-sqlite3 native binding is unavailable/i.test(output),
-    `CLI did not name the blocked binding:\n${output}`,
-  );
-  assert(
-    /repaired the better-sqlite3 native binding\. Continuing startup\./i.test(output),
-    `CLI did not report verified repair:\n${output}`,
-  );
   assert(/Invalid port: 0/.test(output), `CLI did not reach normal validation after repair:\n${output}`);
-  assert(existsSync(bindingPath), "scoped repair returned without materializing the native binding");
+  if (betterSqliteMajor >= 13) {
+    // v13 ships explicit per-platform prebuilds in the package, so npm 12's
+    // lifecycle-script block is no longer a broken first run. The preflight
+    // must accept the usable package without claiming it repaired anything.
+    assert(
+      !/detected that the better-sqlite3 native binding is unavailable/i.test(output),
+      `CLI incorrectly claimed the packaged v13 prebuild was unavailable:\n${output}`,
+    );
+    assert(
+      !/repaired the better-sqlite3 native binding/i.test(output),
+      `CLI incorrectly claimed a repair for the packaged v13 prebuild:\n${output}`,
+    );
+  } else {
+    assert(
+      /detected that the better-sqlite3 native binding is unavailable/i.test(output),
+      `CLI did not name the blocked binding:\n${output}`,
+    );
+    assert(
+      /repaired the better-sqlite3 native binding\. Continuing startup\./i.test(output),
+      `CLI did not report verified repair:\n${output}`,
+    );
+    assert(
+      existsSync(legacyBindingPath),
+      "scoped repair returned without materializing the native binding",
+    );
+  }
   assert(
     !/Could not locate the bindings file[\s\S]*Try:/i.test(output),
     `raw bindings search stack leaked to the customer:\n${output}`,
@@ -119,7 +147,7 @@ try {
     readFileSync(path.join(installedModules, packageName, "package.json"), "utf8"),
   );
   console.log(
-    `[npm12-smoke] passed: ${packageName}@${installedPackage.version} detected and repaired the blocked binding`,
+    `[npm12-smoke] passed: ${packageName}@${installedPackage.version} loaded better-sqlite3@${betterSqlitePackage.version} under npm 12`,
   );
 } finally {
   rmSync(workDir, { recursive: true, force: true });

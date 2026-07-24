@@ -90,7 +90,13 @@ describe("ExecutionTargetPreview", () => {
               automaticFallbackEnabled: true,
               consideredRuntimeIds: ["anthropic-direct", "ollama"],
               skippedRuntimes: [
-                { runtimeId: "ollama", reason: "Ollama endpoint is unavailable" },
+                {
+                  runtimeId: "openai-codex-app-server",
+                  reason:
+                    "Codex is signed in on this computer, but not connected to Relay.",
+                  actionHref: "/settings#settings-providers-runtimes",
+                  actionLabel: "Import Codex session in Settings",
+                },
               ],
             },
           ],
@@ -99,7 +105,12 @@ describe("ExecutionTargetPreview", () => {
     );
     render(<ExecutionTargetPreview kind="task" id="task-2" />);
     expect(await screen.findByText("1 runtime skipped")).toBeInTheDocument();
-    expect(screen.getByText(/Ollama endpoint is unavailable/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Codex is signed in on this computer/)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Import Codex session in Settings" })
+    ).toHaveAttribute("href", "/settings#settings-providers-runtimes");
   });
 
   it("renders a named blocking state without inventing an alternative", async () => {
@@ -112,8 +123,15 @@ describe("ExecutionTargetPreview", () => {
           targets: [],
           context: null,
           error: {
-            code: "runtime_capability_mismatch",
-            message: "Ollama lacks filesystem tools required by document-writer.",
+            code: "no_eligible_runtime",
+            message:
+              "Codex is signed in on this computer, but not connected to Relay.",
+            actions: [
+              {
+                href: "/settings#settings-providers-runtimes",
+                label: "Import Codex session in Settings",
+              },
+            ],
           },
         }),
       })
@@ -124,8 +142,12 @@ describe("ExecutionTargetPreview", () => {
     expect(
       await screen.findByText("Execution target needs attention")
     ).toBeInTheDocument();
-    expect(screen.getByText(/lacks filesystem tools/)).toBeInTheDocument();
+    expect(screen.getByText(/not connected to Relay/)).toBeInTheDocument();
     expect(screen.getByText("Edit the target before running.")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Import Codex session in Settings" })
+    ).toHaveAttribute("href", "/settings#settings-providers-runtimes");
+    expect(screen.queryByText("Open provider setup")).not.toBeInTheDocument();
     await waitFor(() => expect(screen.queryByText("Runs on")).not.toBeInTheDocument());
   });
 });

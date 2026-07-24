@@ -12,12 +12,6 @@
       "version": "2.6.5",
       "ownerPath": "drizzle-kit",
       "scope": "development-only"
-    },
-    {
-      "name": "prebuild-install",
-      "version": "7.1.3",
-      "ownerPath": "better-sqlite3",
-      "scope": "production-native-install"
     }
   ],
   "spreadsheetDependencies": {
@@ -46,5 +40,5 @@
     ],
     "decision": "Reject npm audit force fixes and root-only overrides that disappear for npx customers. Retain authoritative advisory review, maintained spreadsheet dependencies, consumer regressions, and the exact deprecation guard."
   },
-  "disposition": "Replacing stale ExcelJS with maintained Node 18+ reader/writer packages removes six production warnings and the reachable UUID advisory without changing Relay's Node 20+ policy. Recharts' react-is peer is direct so a clean production tree cannot lose it. prebuild-install remains until Relay separately adopts Node 22+ and better-sqlite3 13 with native/platform proof. Two drizzle-kit warnings remain development-only. Any added or changed warning or guarded runtime dependency fails this guard."
+  "disposition": "Replacing stale ExcelJS with maintained reader/writer packages removed six production warnings and the reachable UUID advisory. Relay's Node 22 policy now permits better-sqlite3 13, whose node-addon-api install path removes deprecated prebuild-install from the production closure. Recharts' react-is peer remains direct. Two drizzle-kit warnings remain development-only. Any added or changed warning or guarded runtime dependency fails this guard."
 }

@@ -78,6 +78,38 @@ afterEach(() => {
   } else {
     delete (HTMLElement.prototype as Partial<HTMLElement>).scrollTo;
   }
+  document.documentElement.style.removeProperty("--chrome-rail-measured");
+});
+
+describe("TelemetryRail sticky geometry", () => {
+  it("publishes its rendered border-box height as the next rail's authority", () => {
+    stubTelemetry(snapshot());
+    vi.spyOn(
+      HTMLElement.prototype,
+      "getBoundingClientRect"
+    ).mockImplementation(function () {
+      const height = this.dataset.testid === "telemetry-rail" ? 73.5 : 0;
+      return {
+        left: 0,
+        right: 0,
+        width: 0,
+        top: 0,
+        bottom: height,
+        height,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      };
+    });
+
+    render(<TelemetryRail />);
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--chrome-rail-measured"
+      )
+    ).toBe("73.5px");
+  });
 });
 
 describe("TelemetryRail spend cells", () => {

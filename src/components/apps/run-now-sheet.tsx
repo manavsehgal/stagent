@@ -67,14 +67,24 @@ export function RunNowSheet({
   const [values, setValues] = useState<Record<string, unknown>>(initialValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, setPending] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [submitFailed, setSubmitFailed] = useState(false);
 
   async function handleSubmit() {
     const validation = validateVariables(values, variables);
     if (Object.keys(validation.errors).length > 0) {
+      setSubmitMessage(null);
+      setSubmitFailed(false);
       setErrors(validation.errors);
       return;
     }
     setErrors({});
+    setSubmitMessage(
+      mode === "run"
+        ? "Starting this workflow. Your inputs will stay here until Relay confirms the exact run."
+        : "Creating this workflow. Your inputs will stay here until Relay confirms the draft."
+    );
+    setSubmitFailed(false);
     setPending(true);
     try {
       const result = await instantiateAndMaybeExecute(blueprintId, values, mode);
@@ -95,10 +105,18 @@ export function RunNowSheet({
               : {}),
           });
         }
+        setSubmitFailed(true);
+        setSubmitMessage(
+          result.field
+            ? "Review the highlighted field. Your other inputs are unchanged; fix it and try again."
+            : `${result.error} Your inputs are unchanged; fix the issue and try again.`
+        );
         return;
       }
       if (mode === "run") toastRunStarted(result.workflowId);
       else toastDraftCreated(result.workflowId);
+      setSubmitMessage(null);
+      setSubmitFailed(false);
       setOpen(false);
     } finally {
       setPending(false);
@@ -106,9 +124,16 @@ export function RunNowSheet({
   }
 
   const TriggerIcon = mode === "create" ? Plus : Play;
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      setSubmitMessage(null);
+      setSubmitFailed(false);
+    }
+    setOpen(nextOpen);
+  };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <Button
           size="sm"
@@ -153,6 +178,19 @@ export function RunNowSheet({
                 ? "Start run"
                 : "Create workflow"}
           </Button>
+          {submitMessage && (
+            <p
+              role={submitFailed ? "alert" : "status"}
+              aria-live={submitFailed ? "assertive" : "polite"}
+              className={
+                submitFailed
+                  ? "rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+                  : "rounded-lg border border-status-running/30 bg-status-running/10 px-3 py-2 text-sm text-foreground"
+              }
+            >
+              {submitMessage}
+            </p>
+          )}
         </div>
       </SheetContent>
     </Sheet>

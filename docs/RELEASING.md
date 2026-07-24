@@ -53,7 +53,7 @@ Never move either tag to resolve this ordering.
    ```
 
    The driver refuses a dirty/unpushed source, waits for the complete release
-   quality contract and macOS/Windows Node 22/npm 11 plus Node 24/npm 12
+   quality contract and macOS/Windows/Linux Node 22/npm 11 plus Node 24/npm 12
    fresh-clone matrix, validates current production dependency policy and
    release surfaces, then prints the one eligible tag command. It never creates
    or pushes the tag itself.

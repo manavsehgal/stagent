@@ -21,6 +21,11 @@ export interface RuntimeSetupState {
   authMethod: RuntimeSetupMethod;
   apiKeySource: ApiKeySource;
   billingMode: RuntimeBillingMode;
+  setupGuidance?: {
+    message: string;
+    href: string;
+    actionLabel: string;
+  };
 }
 
 export async function getRuntimeSetupStates(): Promise<
@@ -81,6 +86,23 @@ export async function getRuntimeSetupStates(): Promise<
         openAIAuth.method === "oauth" && openAIAuth.oauthConnected
           ? "subscription"
           : "usage",
+      ...(!openAIAuth.oauthConnected && openAIAuth.existingSessionAvailable
+        ? {
+            setupGuidance: openAIAuth.existingSessionAdoptable
+              ? {
+                  message:
+                    "Codex is signed in on this computer, but that session has not been explicitly imported into Relay's isolated credential store.",
+                  href: "/settings#settings-providers-runtimes",
+                  actionLabel: "Import Codex session in Settings",
+                }
+              : {
+                  message:
+                    "Codex is signed in on this computer through protected system storage. Relay cannot copy that session; create a separate Relay sign-in.",
+                  href: "/settings#settings-providers-runtimes",
+                  actionLabel: "Sign in to ChatGPT for Relay",
+                },
+          }
+        : {}),
     },
     "anthropic-direct": {
       runtimeId: "anthropic-direct",

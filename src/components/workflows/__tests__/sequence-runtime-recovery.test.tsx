@@ -42,6 +42,11 @@ const data: Extract<WorkflowStatusResponse, { pattern: "sequence" }> = {
           blockedAt: "2026-07-23T00:00:00.000Z",
           lastHealthCheck: "unavailable",
         },
+        recoveryEligibility: {
+          eligible: true,
+          reason:
+            "This step is declared replay-safe; completed earlier steps will not run again.",
+        },
       },
     },
   ],
@@ -90,5 +95,47 @@ describe("SequencePatternView runtime recovery", () => {
       ),
     );
     expect(onRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers suffix resume for an eligible ordinary failed step", async () => {
+    const failedData = {
+      ...data,
+      status: "failed",
+      steps: data.steps.map((step) =>
+        step.id === "blocked"
+          ? {
+              ...step,
+              state: {
+                stepId: "blocked",
+                status: "failed" as const,
+                error: "Provider refused the request.",
+                recoveryEligibility: {
+                  eligible: true,
+                  reason: "Completed earlier steps will not run again.",
+                },
+              },
+            }
+          : step
+      ),
+    };
+    render(
+      <SequencePatternView
+        data={failedData}
+        setData={vi.fn()}
+        onRefresh={onRefresh}
+        onRequestDelete={vi.fn()}
+      />
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Resume from failed step" })
+    );
+
+    await waitFor(() =>
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/workflows/workflow-1/steps/blocked/retry",
+        { method: "POST" }
+      )
+    );
   });
 });

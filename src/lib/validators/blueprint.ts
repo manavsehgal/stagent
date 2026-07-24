@@ -32,6 +32,7 @@ export const BlueprintStepSchema = z
     promptTemplate: z.string().optional(),
     delayDuration: z.string().optional(),
     requiresApproval: z.boolean(),
+    replaySafe: z.boolean().optional(),
     expectedOutput: z.string().optional(),
     condition: z.string().optional(),
   })
@@ -53,6 +54,13 @@ export const BlueprintStepSchema = z
     }
 
     if (hasDelay) {
+      if (step.replaySafe !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["replaySafe"],
+          message: "Delay steps cannot declare replaySafe.",
+        });
+      }
       // Delay step: validate the duration string parses and is within bounds.
       try {
         parseDuration(step.delayDuration as string);

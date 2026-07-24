@@ -24,6 +24,8 @@ export interface BlueprintStep {
   /** If set, this step is a pure time delay. Format: Nm|Nh|Nd|Nw. */
   delayDuration?: string;
   requiresApproval: boolean;
+  /** Explicit assertion that retrying this task is read-only/idempotent. */
+  replaySafe?: boolean;
   expectedOutput?: string;
   condition?: string;
 }

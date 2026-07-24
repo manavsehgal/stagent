@@ -59,6 +59,14 @@ describe("computeSignpost", () => {
     expect(s?.text).toMatch(/approval|inbox/i);
   });
 
+  it("shows a durable paused claim with a live child as working", () => {
+    const s = computeSignpost(makeNonLoop("paused", null, 1));
+    expect(s?.tone).toBe("info");
+    expect(s?.icon).toBe("spinner");
+    expect(s?.text).toMatch(/working now/i);
+    expect(s?.href).toBeUndefined();
+  });
+
   it("labels a delay pause as self-resuming (resumeAt present) — NOT an Inbox prompt", () => {
     const s = computeSignpost(makeNonLoop("paused", Date.now() + 60_000));
     expect(s?.tone).toBe("wait");

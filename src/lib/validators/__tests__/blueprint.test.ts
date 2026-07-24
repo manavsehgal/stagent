@@ -34,6 +34,14 @@ describe("BlueprintStepSchema", () => {
       expect(result.success).toBe(true);
     });
 
+    it("accepts a trusted task step replay-safety assertion", () => {
+      const result = BlueprintStepSchema.safeParse({
+        ...validTaskStep,
+        replaySafe: true,
+      });
+      expect(result.success).toBe(true);
+    });
+
     it("rejects a task step missing profileId", () => {
       const { profileId: _profileId, ...stepWithoutProfile } = validTaskStep;
       const result = BlueprintStepSchema.safeParse(stepWithoutProfile);
@@ -51,6 +59,17 @@ describe("BlueprintStepSchema", () => {
     it("accepts a valid delay step", () => {
       const result = BlueprintStepSchema.safeParse(validDelayStep);
       expect(result.success).toBe(true);
+    });
+
+    it("rejects replay safety on a delay step", () => {
+      const result = BlueprintStepSchema.safeParse({
+        ...validDelayStep,
+        replaySafe: true,
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(JSON.stringify(result.error.issues)).toMatch(/replaySafe/);
+      }
     });
 
     it("accepts all valid duration formats", () => {

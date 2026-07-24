@@ -160,6 +160,10 @@ export const agentLogs = sqliteTable(
   {
     id: text("id").primaryKey(),
     taskId: text("task_id").references(() => tasks.id),
+    workflowId: text("workflow_id").references(() => workflows.id, {
+      onDelete: "cascade",
+    }),
+    workflowRunNumber: integer("workflow_run_number"),
     agentType: text("agent_type").notNull(),
     event: text("event").notNull(),
     payload: text("payload"),
@@ -167,6 +171,10 @@ export const agentLogs = sqliteTable(
   },
   (table) => [
     index("idx_agent_logs_task_id").on(table.taskId),
+    index("idx_agent_logs_workflow_run").on(
+      table.workflowId,
+      table.workflowRunNumber
+    ),
     index("idx_agent_logs_timestamp").on(table.timestamp),
   ]
 );
@@ -176,6 +184,10 @@ export const notifications = sqliteTable(
   {
     id: text("id").primaryKey(),
     taskId: text("task_id").references(() => tasks.id),
+    workflowId: text("workflow_id").references(() => workflows.id, {
+      onDelete: "cascade",
+    }),
+    workflowRunNumber: integer("workflow_run_number"),
     type: text("type", {
       enum: [
         "permission_required",
@@ -199,6 +211,10 @@ export const notifications = sqliteTable(
   },
   (table) => [
     index("idx_notifications_task_id").on(table.taskId),
+    index("idx_notifications_workflow_run").on(
+      table.workflowId,
+      table.workflowRunNumber
+    ),
     index("idx_notifications_read").on(table.read),
   ]
 );

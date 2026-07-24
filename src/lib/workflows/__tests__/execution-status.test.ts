@@ -35,4 +35,32 @@ describe("getWorkflowExecutionInfo", () => {
       canStop: false,
     });
   });
+
+  it("treats a durable paused claim with a live task as running", () => {
+    expect(
+      getWorkflowExecutionInfo({
+        status: "paused",
+        liveTaskCount: 1,
+        stepStates: [{ status: "running" }],
+      })
+    ).toMatchObject({
+      status: "running",
+      canRun: false,
+      canStop: true,
+    });
+  });
+
+  it("keeps a genuinely waiting paused workflow non-live", () => {
+    expect(
+      getWorkflowExecutionInfo({
+        status: "paused",
+        liveTaskCount: 0,
+        stepStates: [{ status: "waiting_approval" }],
+      })
+    ).toMatchObject({
+      status: "paused",
+      canRun: true,
+      canStop: false,
+    });
+  });
 });

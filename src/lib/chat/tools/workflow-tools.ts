@@ -267,6 +267,16 @@ export function workflowTools(ctx: ToolContext) {
           if (!parsedDef.pattern || !Array.isArray(parsedDef.steps)) {
             return err('Definition must include "pattern" and "steps" array');
           }
+          if (
+            parsedDef.steps.some(
+              (step: { replaySafe?: unknown }) =>
+                step.replaySafe !== undefined
+            )
+          ) {
+            return err(
+              "Chat-created workflows cannot self-assert replay safety. Use a trusted blueprint contract or leave failed-step replay disabled."
+            );
+          }
 
           // Auto-assign IDs to steps that don't have them (chat LLMs often omit IDs)
           for (const step of parsedDef.steps) {

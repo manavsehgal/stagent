@@ -34,7 +34,12 @@ export interface ExecutionTargetPreviewItem {
   routingPreference: string | null;
   automaticFallbackEnabled: boolean;
   consideredRuntimeIds: string[];
-  skippedRuntimes: Array<{ runtimeId: string; reason: string }>;
+  skippedRuntimes: Array<{
+    runtimeId: string;
+    reason: string;
+    actionHref?: string;
+    actionLabel?: string;
+  }>;
 }
 
 export interface ExecutionTargetPreviewResponse {
@@ -46,5 +51,9 @@ export interface ExecutionTargetPreviewResponse {
     code: ExecutionTargetErrorCode;
     message: string;
     targetLabel?: string;
+    actions?: Array<{
+      href: string;
+      label: string;
+    }>;
   } | null;
 }

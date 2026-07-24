@@ -226,7 +226,8 @@
      tracks the root font like --chrome-header: the rail's 3-line cell +
      2×0.625rem padding renders ~4.95rem (≈69px at the operator's 14px root). */
   --chrome-rail: 4.95rem;
-  --chrome-glance-top: calc(var(--chrome-header) + var(--chrome-rail)); /* glance sticky top */
+  --chrome-rail-measured: var(--chrome-rail);
+  --chrome-glance-top: calc(var(--chrome-header) + var(--chrome-rail-measured)); /* glance sticky top */
 
   /* Named z-scale — formalizes values previously scattered as magic numbers
      (z-20/z-30/100/9999). Header always wins over rail; grid sits below all

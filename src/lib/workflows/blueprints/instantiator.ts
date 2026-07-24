@@ -136,6 +136,7 @@ export function prepareBlueprintInstantiation(
       prompt: resolvedPrompt,
       requiresApproval: step.requiresApproval,
       agentProfile: step.profileId,
+      replaySafe: step.replaySafe,
     });
   }
 

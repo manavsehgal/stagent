@@ -64,6 +64,26 @@ describe("RunNowSheet", () => {
     );
   });
 
+  it("does not show a stale starting status when reopened after success", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ workflowId: "wf-1" }),
+    });
+    render(<RunNowSheet blueprintId="bp1" variables={variables} />);
+    fireEvent.click(screen.getByRole("button", { name: /^run$/i }));
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: "NVDA" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /start run/i }));
+    await waitFor(() =>
+      expect(screen.queryByRole("status")).not.toBeInTheDocument()
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /^run$/i }));
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByRole("textbox")).toHaveValue("NVDA");
+  });
+
   it("shows field-level error when API returns 400 with field+message", async () => {
     fetchMock.mockResolvedValueOnce({
       ok: false,
@@ -90,5 +110,53 @@ describe("RunNowSheet", () => {
     await waitFor(() => {
       expect((screen.getByRole("textbox") as HTMLInputElement).value).toBe("NVDA");
     });
+  });
+
+  it("keeps a prominent live pending status visible while the start request is unresolved", async () => {
+    let resolveRequest!: (value: {
+      ok: boolean;
+      json: () => Promise<{ workflowId: string }>;
+    }) => void;
+    fetchMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveRequest = resolve;
+      })
+    );
+    render(<RunNowSheet blueprintId="bp1" variables={variables} />);
+    fireEvent.click(screen.getByRole("button", { name: /^run$/i }));
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: "NVDA" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /start run/i }));
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /starting this workflow/i
+    );
+    expect(screen.getByRole("button", { name: /starting/i })).toBeDisabled();
+    expect(screen.getByRole("textbox")).toHaveValue("NVDA");
+
+    resolveRequest({ ok: true, json: async () => ({ workflowId: "wf-1" }) });
+    await waitFor(() =>
+      expect(screen.queryByRole("status")).not.toBeInTheDocument()
+    );
+  });
+
+  it("keeps inputs and shows an inline recovery after a named start failure", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 409,
+      json: async () => ({ message: "No eligible runtime is connected." }),
+    });
+    render(<RunNowSheet blueprintId="bp1" variables={variables} />);
+    fireEvent.click(screen.getByRole("button", { name: /^run$/i }));
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: "NVDA" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /start run/i }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      /no eligible runtime is connected.*inputs are unchanged/i
+    );
+    expect(screen.getByRole("textbox")).toHaveValue("NVDA");
   });
 });

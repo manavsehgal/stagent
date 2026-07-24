@@ -78,4 +78,32 @@ describe("OperationsReceiptHistory", () => {
       screen.getByRole("link", { name: "Open receipt source diagnostics" })
     ).toHaveAttribute("href", "/monitor?taskId=task-1");
   });
+
+  it("links a workflow receipt to its exact run audit", () => {
+    render(
+      <OperationsReceiptHistory
+        receipts={[
+          {
+            id: "receipt-workflow",
+            ownerType: "workflow",
+            workflowId: "workflow-1",
+            taskId: null,
+            workflowRunNumber: 3,
+            verdict: "passed",
+            evidence: [],
+            summary: "The workflow met its declared bar.",
+            nextAction: "Review the exact run.",
+            finishedAt: "2026-07-23T12:00:00.000Z",
+          },
+        ]}
+      />
+    );
+
+    expect(
+      screen.getByRole("link", { name: "Open receipt source diagnostics" })
+    ).toHaveAttribute(
+      "href",
+      "/workflows/workflow-1?run=3#workflow-run-3"
+    );
+  });
 });

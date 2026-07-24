@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Cpu, FolderLock, ShieldCheck } from "lucide-react";
 import type { ExecutionTargetPreviewResponse } from "@/lib/agents/runtime/execution-target-contract";
 
@@ -87,6 +88,26 @@ export function ExecutionTargetPreview({
               {data?.error?.message ?? "Relay could not resolve an execution target."}
             </p>
             <p className="mt-1 text-xs font-medium">Edit the target before running.</p>
+            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+              {data?.error?.actions?.length ? (
+                data.error.actions.map((action) => (
+                  <Link
+                    key={`${action.href}-${action.label}`}
+                    href={action.href}
+                    className="inline-flex text-xs font-medium text-primary hover:underline"
+                  >
+                    {action.label}
+                  </Link>
+                ))
+              ) : (
+                <Link
+                  href="/settings#settings-providers-runtimes"
+                  className="inline-flex text-xs font-medium text-primary hover:underline"
+                >
+                  Open provider setup
+                </Link>
+              )}
+            </div>
             {data?.context && (
               <ExecutionBoundaryContext context={data.context} kind={data.kind} />
             )}
@@ -138,6 +159,17 @@ export function ExecutionTargetPreview({
                         {skip.runtimeId}:
                       </span>{" "}
                       {skip.reason}
+                      {skip.actionHref && skip.actionLabel && (
+                        <>
+                          {" "}
+                          <Link
+                            href={skip.actionHref}
+                            className="font-medium text-primary hover:underline"
+                          >
+                            {skip.actionLabel}
+                          </Link>
+                        </>
+                      )}
                     </li>
                   ))}
                 </ul>

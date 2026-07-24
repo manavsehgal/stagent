@@ -155,6 +155,58 @@ describe("database bootstrap recovery", () => {
     legacy.close();
   });
 
+  it("adds workflow audit identity before creating its indexes on a legacy DB", () => {
+    const legacy = new Database(dbPath);
+    legacy.exec(`
+      CREATE TABLE agent_logs (
+        id TEXT PRIMARY KEY NOT NULL,
+        task_id TEXT,
+        agent_type TEXT NOT NULL,
+        event TEXT NOT NULL,
+        payload TEXT,
+        timestamp INTEGER NOT NULL
+      );
+      CREATE TABLE notifications (
+        id TEXT PRIMARY KEY NOT NULL,
+        task_id TEXT,
+        type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        body TEXT,
+        read INTEGER DEFAULT 0 NOT NULL,
+        tool_name TEXT,
+        tool_input TEXT,
+        response TEXT,
+        responded_at INTEGER,
+        created_at INTEGER NOT NULL
+      );
+    `);
+
+    expect(() => bootstrapAinativeDatabase(legacy)).not.toThrow();
+    const columns = (tableName: string) =>
+      (
+        legacy.prepare(`PRAGMA table_info(${tableName})`).all() as Array<{
+          name: string;
+        }>
+      ).map((column) => column.name);
+    expect(columns("agent_logs")).toEqual(
+      expect.arrayContaining(["workflow_id", "workflow_run_number"])
+    );
+    expect(columns("notifications")).toEqual(
+      expect.arrayContaining(["workflow_id", "workflow_run_number"])
+    );
+    const indexes = (tableName: string) =>
+      (
+        legacy.prepare(`PRAGMA index_list(${tableName})`).all() as Array<{
+          name: string;
+        }>
+      ).map((index) => index.name);
+    expect(indexes("agent_logs")).toContain("idx_agent_logs_workflow_run");
+    expect(indexes("notifications")).toContain(
+      "idx_notifications_workflow_run"
+    );
+    legacy.close();
+  });
+
   it("bootstraps Operations Receipt storage and success-criteria columns idempotently", () => {
     const bootstrapDb = new Database(dbPath);
 

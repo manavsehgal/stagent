@@ -8,8 +8,9 @@ interface WorkflowRow {
   projectId: string | null;
 }
 
-const { mockWorkflowRows } = vi.hoisted(() => ({
+const { mockWorkflowRows, mockInsert } = vi.hoisted(() => ({
   mockWorkflowRows: { value: [] as WorkflowRow[] },
+  mockInsert: vi.fn(() => ({ values: vi.fn() })),
 }));
 
 // Minimal drizzle query builder stub — supports
@@ -30,6 +31,7 @@ vi.mock("@/lib/db", () => {
   return {
     db: {
       select: () => builder,
+      insert: mockInsert,
     },
   };
 });
@@ -93,6 +95,34 @@ describe("workflow Operations Receipt criteria", () => {
         successCriteria: [{ ...criterion, check: "llm_judge" }],
       }).success
     ).toBe(false);
+  });
+
+  it("rejects an autonomous replay-safety assertion without writing a workflow", async () => {
+    const tool = workflowTools({ projectId: "project-1" } as never).find(
+      (candidate) => candidate.name === "create_workflow"
+    );
+    if (!tool) throw new Error("create_workflow tool missing");
+
+    const result = await tool.handler({
+      name: "Unsafe self-assertion",
+      definition: JSON.stringify({
+        pattern: "sequence",
+        steps: [
+          {
+            id: "one",
+            name: "May send a message",
+            prompt: "Send the message",
+            replaySafe: true,
+          },
+        ],
+      }),
+    });
+
+    expect(result.isError).toBe(true);
+    expect(result.content[0]?.text).toMatch(
+      /cannot self-assert replay safety/i
+    );
+    expect(mockInsert).not.toHaveBeenCalled();
   });
 });
 

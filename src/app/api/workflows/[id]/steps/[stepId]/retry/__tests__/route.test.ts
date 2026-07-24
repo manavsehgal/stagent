@@ -43,7 +43,12 @@ function seedFailedWorkflow(includeSuffix = true) {
   const now = new Date();
   const steps = [
     { id: "prefix", name: "Prefix", prompt: "already done" },
-    { id: "target", name: "Target", prompt: "retry me" },
+    {
+      id: "target",
+      name: "Target",
+      prompt: "retry me",
+      replaySafe: true,
+    },
     ...(includeSuffix ? [{ id: "suffix", name: "Suffix", prompt: "continue" }] : []),
   ];
   const state: WorkflowState = {
