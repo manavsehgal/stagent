@@ -20,7 +20,9 @@ them; the current package and repository identity is Orionfold Relay.
 - **Release quality now guards recent customer-facing regression lineages.**
   Named claims connect provider readiness, workflow supervision, shell
   navigation, and responsive Settings behavior to deterministic tests that run
-  in the normal quality gate.
+  in the normal quality gate. Cell candidates defer only the portable Host
+  digest-binding test until the signed registry digest exists; Host candidates
+  must pass that binding before npm publication.
 
 ### Changed
 

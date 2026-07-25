@@ -52,11 +52,13 @@ Never move either tag to resolve this ordering.
      --dispatch true
    ```
 
-   The driver refuses a dirty/unpushed source, waits for the complete release
+   The driver refuses a dirty/unpushed source, waits for the Cell-scoped release
    quality contract and macOS/Windows/Linux Node 22/npm 11 plus Node 24/npm 12
    fresh-clone matrix, validates current production dependency policy and
-   release surfaces, then prints the one eligible tag command. It never creates
-   or pushes the tag itself.
+   release surfaces, then prints the one eligible tag command. The Cell scope
+   defers only the portable Host binding test because the new immutable registry
+   digest does not exist yet; step 5 runs that test after the digest is bound.
+   The driver never creates or pushes the tag itself.
 3. Under the separately authorized release gate, create and push the printed
    annotated `cell-vX.Y.Z` tag. The Cell workflow refuses to write even to
    private staging unless the 24-hour receipt matches the tag commit, git tree,

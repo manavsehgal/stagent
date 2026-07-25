@@ -1,4 +1,5 @@
 export const QUALITY_PROFILES = ["pr", "release"];
+export const RELEASE_SCOPES = ["all", "cell", "host"];
 
 export const ALWAYS_LANES = [
   "typecheck",
@@ -272,10 +273,15 @@ export function pathMatchesPattern(path, pattern) {
   return path === pattern;
 }
 
-export function planQualityGate({ profile, changedFiles = [] }) {
+export function planQualityGate({ profile, changedFiles = [], releaseScope = "all" }) {
   if (!QUALITY_PROFILES.includes(profile)) {
     throw new QualityPolicyError(
       `Unknown quality profile ${JSON.stringify(profile)}; expected ${QUALITY_PROFILES.join(", ")}`
+    );
+  }
+  if (!RELEASE_SCOPES.includes(releaseScope)) {
+    throw new QualityPolicyError(
+      `Unknown release scope ${JSON.stringify(releaseScope)}; expected ${RELEASE_SCOPES.join(", ")}`
     );
   }
   const normalizedFiles = [...new Set(changedFiles.map(normalizeChangedPath))].sort();
@@ -290,7 +296,10 @@ export function planQualityGate({ profile, changedFiles = [] }) {
   );
   if (profile === "release") {
     for (const lane of CONDITIONAL_LANES) laneReasons[lane] = ["release profile"];
-    for (const lane of RELEASE_ONLY_LANES) laneReasons[lane] = ["release profile"];
+    for (const lane of RELEASE_ONLY_LANES) {
+      if (releaseScope === "cell" && lane === "portable-host-tests") continue;
+      laneReasons[lane] = [`${releaseScope} release profile`];
+    }
   } else {
     for (const [lane, patterns] of Object.entries(PATH_LANE_RULES)) {
       const matches = normalizedFiles.filter((path) =>
@@ -307,6 +316,7 @@ export function planQualityGate({ profile, changedFiles = [] }) {
   ].filter((lane) => laneReasons[lane]);
   return {
     profile,
+    releaseScope,
     changedFiles: normalizedFiles,
     lanes: ordered,
     laneReasons,

@@ -420,6 +420,7 @@ export function runQualityGate(plan, { root = repoRoot } = {}) {
 export function parseCli(argv) {
   const options = {
     profile: null,
+    releaseScope: process.env.QUALITY_RELEASE_SCOPE || "all",
     base: process.env.QUALITY_BASE_SHA || null,
     head: process.env.QUALITY_HEAD_SHA || null,
     changedFiles: [],
@@ -429,6 +430,7 @@ export function parseCli(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === "--profile") options.profile = argv[++index];
+    else if (arg === "--release-scope") options.releaseScope = argv[++index];
     else if (arg === "--base") options.base = argv[++index];
     else if (arg === "--head") options.head = argv[++index];
     else if (arg === "--changed-file") options.changedFiles.push(argv[++index]);
@@ -453,7 +455,11 @@ if (isMainModule()) {
       options.profile === "pr" && options.changedFiles.length === 0
         ? changedFilesFromGit({ base: options.base, head: options.head })
         : options.changedFiles;
-    const plan = planQualityGate({ profile: options.profile, changedFiles });
+    const plan = planQualityGate({
+      profile: options.profile,
+      changedFiles,
+      releaseScope: options.releaseScope,
+    });
     if (options.dryRun) {
       console.log(options.json ? JSON.stringify(plan, null, 2) : plan.lanes.join("\n"));
     } else {

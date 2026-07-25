@@ -89,6 +89,7 @@ jobs:
     uses: ./.github/workflows/quality-gate.yml
     with:
       profile: release
+      release_scope: cell
     permissions:
       contents: read
 

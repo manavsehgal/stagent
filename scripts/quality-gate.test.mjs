@@ -22,6 +22,7 @@ import {
   planQualityGate,
   QualityPolicyError,
   RELEASE_ONLY_LANES,
+  RELEASE_SCOPES,
 } from "./quality-policy.mjs";
 
 const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
@@ -134,6 +135,24 @@ test("release plans run every conditional and release-only lane", () => {
     "release-preflight-tests",
     "relay-cell-publication-tests",
   ]);
+  assert.deepEqual(RELEASE_SCOPES, ["all", "cell", "host"]);
+});
+
+test("Cell release plans defer only the post-publication portable Host binding", () => {
+  const plan = planQualityGate({ profile: "release", releaseScope: "cell" });
+  assert.equal(plan.lanes.includes("portable-host-tests"), false);
+  for (const lane of RELEASE_ONLY_LANES.filter((id) => id !== "portable-host-tests")) {
+    assert.equal(plan.lanes.includes(lane), true, lane);
+  }
+  const hostPlan = planQualityGate({ profile: "release", releaseScope: "host" });
+  assert.equal(hostPlan.lanes.includes("portable-host-tests"), true);
+});
+
+test("unknown release scopes fail closed", () => {
+  assert.throws(
+    () => planQualityGate({ profile: "release", releaseScope: "unknown" }),
+    /Unknown release scope/
+  );
 });
 
 test("unsafe, empty, and unknown PR planning inputs fail closed", () => {
@@ -154,6 +173,10 @@ test("unsafe, empty, and unknown PR planning inputs fail closed", () => {
 test("CLI parsing rejects missing values and unknown switches", () => {
   assert.throws(() => parseCli(["--wat"]), /Unknown quality-gate argument/);
   assert.throws(() => parseCli([]), /Missing required --profile/);
+  assert.equal(
+    parseCli(["--profile", "release", "--release-scope", "cell"]).releaseScope,
+    "cell"
+  );
 });
 
 test("unresolvable git diff evidence fails closed", () => {
@@ -413,6 +436,7 @@ test("workflow contract is always-on, reusable, read-only, and release-blocking"
     "./.github/workflows/quality-gate.yml"
   );
   assert.equal(publish.jobs.quality.with.profile, "release");
+  assert.equal(publish.jobs.quality.with.release_scope, "host");
   assert.deepEqual(publish.jobs.publish.needs, ["quality", "npm12-first-run"]);
   assert.equal(publish.jobs["npm12-first-run"].needs, "quality");
   assert.equal(publish.jobs["npm12-first-run"].permissions.contents, "read");
