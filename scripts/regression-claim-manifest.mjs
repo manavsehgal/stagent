@@ -206,17 +206,12 @@ export const REGRESSION_CLAIMS = [
         project: "node-test",
         marker: "staging binds app and Host state inside one disposable root",
       },
-      {
-        path: "output/staging/2026-07-23/README.md",
-        project: "staging-receipt",
-        marker: "customer-identical",
-      },
     ],
     command: "test:regression-claims",
     lane: "regression-claims",
     failureProof: {
       mode: "customer-staging",
-      evidence: "Disposable-root guard plus dated browser/CLI/server bundle distinguish default-data or state leakage.",
+      evidence: "The tracked disposable-root guard distinguishes default-data or Host-state leakage in every clean checkout; dated browser/CLI/server bundles remain untracked run evidence.",
     },
   },
   {
