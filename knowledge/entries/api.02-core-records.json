@@ -27,7 +27,7 @@
     "/api/tasks/{id}/target",
     "/api/tasks/assist"
   ],
-  "contentHash": "2a1e808e8a9d2059fe902794eea33461c4526d8ae3e3f9713db1e2815972a680",
+  "contentHash": "3a6dca9ceb3c26dc9e7762593b04101064bec02fe0c7a38515d388fb1ef52405",
   "features": [],
   "id": "api:02-core-records",
   "journeys": [],
@@ -244,8 +244,8 @@
       "heading": "POST /api/tasks/{id}/respond",
       "id": "post-api-tasks-id-respond",
       "level": 3,
-      "markdown": "Records a user's response to a pending task notification, such as a permission prompt or an agent question. The agent's own polling loop consumes the response; this route only records it. The response is matched by `notificationId` in the body, not by the task id in the path.\n\n- **Request** body (JSON):\n\n| Field | Type | Required | Notes |\n|---|---|---|---|\n| `notificationId` | `string` | yes | The pending notification to answer. |\n| `behavior` | `\"allow\" \\| \"deny\"` | yes | |\n| `message` | `string` | no | |\n| `updatedInput` | any | no | Edited tool input. May only change keys present in the original tool input. |\n| `alwaysAllow` | `boolean` | no | |\n| `permissionPattern` | `string` | no | Saved as an always-allow rule when `behavior` is `allow` and `alwaysAllow` is set. |\n\n- **Response** `200`: `{ \"success\": true }`.\n- **Errors**:\n  - `400` on validation failure: `{ \"error\": \"notificationId (string) and behavior ('allow' | 'deny') are required\" }`.\n  - `404` when the notification is not found: `{ \"error\": \"Notification not found\" }`.\n  - `409` when the notification was already answered: `{ \"error\": \"Already responded\" }`.\n  - `400` when an agent-question answer is not `{ answer: string }`: `{ \"error\": \"AskUserQuestion response must be { answer: string }\" }`.\n  - `400` when `updatedInput` adds keys the original tool input did not have: `{ \"error\": \"updatedInput contains disallowed keys: <keys>\" }`.\n- **Side effects**: records the response on the notification and marks it read. When `behavior` is `allow` with `alwaysAllow` and a pattern, saves an always-allow permission rule.",
-      "wordCount": 204
+      "markdown": "Records a user's response to a pending task notification, such as a permission prompt or an agent question. The agent's own polling loop consumes the response; this route only records it. The response is matched by `notificationId` in the body, not by the task id in the path.\n\n- **Request** body (JSON):\n\n| Field | Type | Required | Notes |\n|---|---|---|---|\n| `notificationId` | `string` | yes | The pending notification to answer. |\n| `behavior` | `\"allow\" \\| \"deny\"` | yes | |\n| `message` | `string` | no | |\n| `updatedInput` | object | no | Edited tool input. Normal tools may only change keys present in the original input. Agent questions accept `{ \"answer\": \"...\" }` or the SDK `{ \"questions\": [...], \"answers\": { ... } }` shape; Relay restores the original questions before saving. |\n| `alwaysAllow` | `boolean` | no | |\n| `permissionPattern` | `string` | no | Saved as an always-allow rule when `behavior` is `allow` and `alwaysAllow` is set. |\n\n- **Response** `200`: `{ \"success\": true }`.\n- **Errors**:\n  - `400` on invalid JSON, validation failure, malformed stored tool input, invalid question response, or disallowed edited-input keys. These failures include `code: \"APPROVAL_PAYLOAD_MALFORMED\"`.\n  - `404` when the notification is not found. The named approval error includes a safe recovery message.\n  - `409` when the notification was already answered or does not belong to the task in the path.\n- **Side effects**: records the response on the notification and marks it read. When `behavior` is `allow` with `alwaysAllow` and a pattern, saves an always-allow permission rule. A taskless workflow question or `WorkflowCheckpoint` also requests immediate continuation after the durable response; the scheduler remains the restart-safe reconciliation path.",
+      "wordCount": 229
     },
     {
       "heading": "POST /api/tasks/{id}/resume",
@@ -402,9 +402,9 @@
       "wordCount": 232
     }
   ],
-  "sourceHash": "6db57f304fb051b7f09490cbb8e471a6f18fb30c7a8740465de1b772c784d3ef",
+  "sourceHash": "c72f152b9b2f1fad0f900e062b9fc0456889a0dd8fad07dc0869a9b08d29d5e4",
   "sourcePath": "api/reference/02-core-records.md",
-  "sourceStateHash": "85348226c0640bb7582b3b14e7301465ef5f2fb05343b0929145d31008b9d7a5",
+  "sourceStateHash": "f8acd194eb19324954dd5e34bdc534dd1fec46ed82cdf3505211e3116a7da598",
   "stability": "app-internal",
   "summary": "Document records that organize work: customers, projects, tasks, documents, handoffs, and memory.",
   "title": "Core Records API"

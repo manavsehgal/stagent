@@ -38,7 +38,7 @@
     "/api/workshop/preflight",
     "/api/workshop/start"
   ],
-  "contentHash": "b3fb1d4eb549d8a4c46216dc441621b1078c03343d112de34aa84df1c4c46f16",
+  "contentHash": "d3228117015a36c77bff9f6f13f39d1aeb03fe4202f840238008a02d38c2fcd9",
   "features": [],
   "id": "api:04-workflows-automation",
   "journeys": [],
@@ -234,8 +234,8 @@
       "heading": "GET /api/workflows/{id}/status",
       "id": "get-api-workflows-id-status",
       "level": 3,
-      "markdown": "Returns a workflow's full status: its per-step state, run history, and document lists. The shape depends on the workflow pattern.\n\n- **Request**: none.\n- **Response** `200`: an object keyed on `pattern`. Common fields include `id`, `name`, `status`, `projectId`, `projectName`, `definition`, `liveTaskCount`, `runNumber`, `runHistory`, `stepDocuments`, and `parentDocuments`. `projectName` is the current linked name or `null`. The non-loop patterns add a `resumeAt` (epoch milliseconds or `null`), per-step `state`, and a `workflowState`; the loop pattern adds `loopState` and `loopConfig`. `runHistory` entries are `{ runNumber, taskCount, completedCount, failedCount }`.\n- **Errors**: `404` when not found: `{ \"error\": \"Workflow not found\" }`.\n- **Side effects**: reads only.",
-      "wordCount": 94
+      "markdown": "Returns a workflow's full status: its per-step state, run history, and document lists. The shape depends on the workflow pattern.\n\n- **Request**: none.\n- **Response** `200`: an object keyed on `pattern`. Common fields include `id`, `name`, `status`, `projectId`, `projectName`, `definition`, `liveTaskCount`, `runNumber`, `runHistory`, `receipts`, `receiptReconciliationErrors`, `stepDocuments`, and `parentDocuments`. `projectName` is the current linked name or `null`. The non-loop patterns add a `resumeAt` (epoch milliseconds or `null`), per-step `state`, and a `workflowState`; the loop pattern adds `loopState` and `loopConfig`.\n\n  `runHistory` is a newest-first, bounded audit for up to 20 receipt-backed runs. Each entry includes terminal status and timestamps, task counts, bounded task attempts, generated-document identities, approval decisions, event names, operations receipt ids, and explicit `omissions` messages when a category is truncated. Task results, log payloads, and approval input content are deliberately excluded. A failed or runtime-blocked non-loop step may also include `state.recoveryEligibility: { eligible, reason }`; Relay returns `eligible: true` only when it can prove a replay-safe sequence suffix.\n- **Errors**: `404` when not found: `{ \"error\": \"Workflow not found\" }`.\n- **Side effects**: reads only.",
+      "wordCount": 168
     },
     {
       "heading": "POST /api/workflows/{id}/steps/{stepId}/retry",
@@ -497,9 +497,9 @@
       "wordCount": 247
     }
   ],
-  "sourceHash": "807fd39026ad4d92a7392efe02a3bae9f552c63d95e03a352bc0ac38af7193a2",
+  "sourceHash": "986c35f394619c5685109410fe2827be0b88571c9cbf3f29f74c21dc850c6faa",
   "sourcePath": "api/reference/04-workflows-automation.md",
-  "sourceStateHash": "761d29c90e7936f4af19450367de7eebafa4fc8f66751183c8ff2e08ae625869",
+  "sourceStateHash": "99e42c361c4cddff047cc7f27e2e30280388a0859932e6288df702d299df84ae",
   "stability": "app-internal",
   "summary": "Document workflow execution, blueprints, schedules, human approvals, and permission controls.",
   "title": "Workflows And Automation API"

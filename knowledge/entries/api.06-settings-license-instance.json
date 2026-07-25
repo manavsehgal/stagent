@@ -48,7 +48,7 @@
     "/api/settings/test",
     "/api/settings/web-search"
   ],
-  "contentHash": "269e2a94aaa69fa1ea6f9d664fdd5cd546ac37b693c3c7afb75170849f6c7123",
+  "contentHash": "c58859fd2d77ccdf923919756ee2bb08e0a97a5fa0b4f163105731aa62134703",
   "features": [],
   "id": "api:06-settings-license-instance",
   "journeys": [],
@@ -398,8 +398,8 @@
       "heading": "GET /api/settings/openai",
       "id": "get-api-settings-openai",
       "level": 3,
-      "markdown": "Returns the OpenAI auth settings, enriched with live OAuth state when the method is `oauth`. It never returns the raw API key.\n\n- **Request**: none.\n- **Response** `200`: `{ \"method\": \"api_key\", \"hasKey\": false, \"apiKeySource\": \"unknown\", \"oauthConnected\": false, \"account\": null, \"rateLimits\": null }`. `apiKeySource` for OpenAI is `db`, `env`, or `unknown` (never `oauth`). `account` carries the connected ChatGPT account type, email, and plan when present.\n- **Errors**: none returned explicitly (an OAuth read failure degrades to disconnected).\n- **Side effects**: when the method is `oauth`, refreshes the live OAuth state, which may persist status.",
-      "wordCount": 86
+      "markdown": "Returns the OpenAI auth settings, enriched with live OAuth state when the method is `oauth`. It never returns the raw API key.\n\n- **Request**: none.\n- **Response** `200`: `{ \"method\": \"api_key\", \"hasKey\": false, \"apiKeySource\": \"unknown\", \"oauthConnected\": false, \"account\": null, \"rateLimits\": null }`. `apiKeySource` for OpenAI is `db`, `env`, or `unknown` (never `oauth`). `account` carries the connected ChatGPT account type, email, and plan when present.\n- **Errors**: none returned explicitly (an OAuth read failure degrades to disconnected).\n- **Side effects**: when the method is `oauth`, reads the current isolated Codex account state without forcing OAuth token rotation. A read failure degrades to disconnected rather than changing the selected auth method.",
+      "wordCount": 102
     },
     {
       "heading": "POST /api/settings/openai",
@@ -482,8 +482,8 @@
       "heading": "GET /api/settings/providers",
       "id": "get-api-settings-providers",
       "level": 3,
-      "markdown": "Returns a consolidated provider, runtime, routing-policy, and\nverified-readiness overview. It never returns raw API keys or provider\ncredentials.\n\n- **Request** optional query: `refreshRuntimeHealth=1` bypasses the 15-second runtime-health cache for this request.\n- **Response** `200`: a `providers` object (each with auth, readiness,\n  `readyRuntimeCount`, and per-runtime state plus provider-specific OAuth\n  fields), a redacted `ollama` block, `compatibleRuntimes` for LiteLLM and LM\n  Studio, `chatDefaultModel`, the legacy `routingPreference`, the complete\n  versioned `routing` snapshot, `runtimeRoutingStatuses` for all registered\n  runtimes, `configuredProviderCount`, and `readyProviderCount`. OpenAI also\n  distinguishes a Relay-connected isolated session from\n  `existingSessionAvailable` and `existingSessionAdoptable`. Each runtime\n  status names configuration, readiness phase, health, selected model,\n  comparable cost when known, capabilities, limits, and a bounded reason.\n- **Errors**: none returned explicitly.\n- **Side effects**: may refresh live OpenAI OAuth state and probes every configured runtime through a bounded, all-settled health snapshot. Probe failures remain per-runtime states instead of failing the aggregate response.",
-      "wordCount": 140
+      "markdown": "Returns a consolidated provider, runtime, routing-policy, and\nverified-readiness overview. It never returns raw API keys or provider\ncredentials.\n\n- **Request** optional query: `refreshRuntimeHealth=1` bypasses the 15-second runtime-health cache for this request.\n- **Response** `200`: a `providers` object (each with auth, readiness,\n  `readyRuntimeCount`, and per-runtime state plus provider-specific OAuth\n  fields), a redacted `ollama` block, `compatibleRuntimes` for LiteLLM and LM\n  Studio, `chatDefaultModel`, the legacy `routingPreference`, the complete\n  versioned `routing` snapshot, `runtimeRoutingStatuses` for all registered\n  runtimes, `configuredProviderCount`, and `readyProviderCount`. OpenAI also\n  distinguishes a Relay-connected isolated session from\n  `existingSessionAvailable` and `existingSessionAdoptable`. Each runtime\n  status names configuration, readiness phase, health, selected model,\n  comparable additional-spend evidence when known, capabilities, limits, and\n  a bounded reason.\n- **Errors**: none returned explicitly.\n- **Side effects**: reads current isolated OpenAI OAuth state without forcing token rotation and probes every configured runtime through a bounded, all-settled health snapshot. Probe failures remain per-runtime states instead of failing the aggregate response.",
+      "wordCount": 145
     },
     {
       "heading": "GET /api/settings/routing",
@@ -640,9 +640,9 @@
       "wordCount": 129
     }
   ],
-  "sourceHash": "f25ff68dba85a150b450d8d8efe48458c3928d8b753fa214f5f7249b73bd59c0",
+  "sourceHash": "12bf39f1da11c5a0cb440fe7f1c5cc0124f450954a62c785fb3ade77431cb0d9",
   "sourcePath": "api/reference/06-settings-license-instance.md",
-  "sourceStateHash": "bce2d9102be474db3ef7a42257d945aab5fb120ff89c4db69939867ce38466b5",
+  "sourceStateHash": "8d8dcedded5983c047dd3b2488b4dc91526da610b119acafc8286afebc2cf0e0",
   "stability": "admin-local",
   "summary": "Document local settings, license lifecycle, instance identity, upgrade, environment, and onboarding routes.",
   "title": "Settings, License, And Instance API"

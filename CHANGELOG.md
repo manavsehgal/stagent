@@ -8,6 +8,20 @@ them; the current package and repository identity is Orionfold Relay.
 
 ## [Unreleased]
 
+## [0.46.4] — 2026-07-25
+
+### Added
+
+- **Workflow runs now retain an operator-auditable execution history.** A run
+  that reaches an approval pauses instead of being mislabeled as denied, while
+  recoverable later-step failures can resume from the failed suffix without
+  replaying completed work. Blueprint launch also reports progress in-place and
+  links directly to the created run.
+- **Release quality now guards recent customer-facing regression lineages.**
+  Named claims connect provider readiness, workflow supervision, shell
+  navigation, and responsive Settings behavior to deterministic tests that run
+  in the normal quality gate.
+
 ### Changed
 
 - **Routing by cost now means minimizing additional provider spend.** Healthy
@@ -19,6 +33,9 @@ them; the current package and repository identity is Orionfold Relay.
   methods show only mode-relevant controls, Chat and Runtime controls pair on
   wider screens, and independent sections use available horizontal space while
   preserving narrow-screen order and accessibility.
+- **Runtime readiness is explained at the point of use.** Workflow execution
+  targets, task routing, and provider setup now share the same readiness
+  language so an unavailable runtime includes a concrete recovery direction.
 
 ### Fixed
 
@@ -30,6 +47,13 @@ them; the current package and repository identity is Orionfold Relay.
   rotation.** Relay uses the documented normal account-read path, allowing a
   valid device sign-in to be adopted and verified inside Relay's isolated
   credential store.
+- **Settings remains within the viewport on phone-sized screens.** Provider
+  methods, routing controls, channel rows, and long identifiers now wrap or
+  scroll within their own bounds instead of widening the entire page.
+- **Workflow receipts and shell status controls are actionable and visually
+  continuous.** Receipt links open their detail target, execution status
+  reflects the verified runtime, and the Settings/telemetry rails no longer
+  expose a gap between fixed shell surfaces.
 
 ## [0.46.3] — 2026-07-23
 

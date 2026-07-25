@@ -33,7 +33,7 @@
     "/api/runtimes/openai-compatible/{runtimeId}",
     "/api/runtimes/suggest"
   ],
-  "contentHash": "081fc954e9e823dbf0c830e748f8b8da5014fef42c954bb0123e9efac6475c6c",
+  "contentHash": "71fe319e0d8e5de4fc6203985b5f47a125594229e735e147b0ab24b11c8aca04",
   "features": [],
   "id": "api:03-agents-chat-runtimes",
   "journeys": [],
@@ -376,8 +376,8 @@
       "heading": "POST /api/runtimes/suggest",
       "id": "post-api-runtimes-suggest",
       "level": 3,
-      "markdown": "Returns an advisory runtime order for a task under the saved routing policy and eligible-runtime pool.\n\n- **Request** body (JSON):\n\n| Field | Type | Required | Notes |\n|---|---|---|---|\n| `title` | `string` | yes | Non-empty task title. Exact runtime-name signals can affect affinity. |\n| `description` | `string \\| null` | no | Combined with the title for affinity signals. |\n| `profileId` | `string \\| null` | no | An eligible profile-preferred runtime wins when present. |\n\n- **Response** `200`:\n  ```json\n  { \"runtimeId\": \"claude-code\", \"orderedRuntimeIds\": [\"claude-code\"], \"reason\": \"string\", \"evidence\": \"pool-order\", \"advisory\": true }\n  ```\n  Manual policy returns its strict default as the only ordered runtime.\n  Automatic policies consider only verified-ready members of the saved\n  eligible pool; comparable configured-model cost is used only when known,\n  while unknown cost, latency, and quality retain saved pool order.\n- **Errors**:\n  - `400` when the strict request body is invalid: `{ \"error\": \"A non-empty title and valid suggestion payload are required\" }`.\n  - `409` when no configured runtime is eligible for automatic routing.\n- **Side effects**: reads routing, verified runtime health, profile, and pricing\n  metadata only. It may refresh an expired bounded runtime-health observation,\n  but it does not persist a routing selection.",
-      "wordCount": 167
+      "markdown": "Returns an advisory runtime order for a task under the saved routing policy and eligible-runtime pool.\n\n- **Request** body (JSON):\n\n| Field | Type | Required | Notes |\n|---|---|---|---|\n| `title` | `string` | yes | Non-empty task title. Exact runtime-name signals can affect affinity. |\n| `description` | `string \\| null` | no | Combined with the title for affinity signals. |\n| `profileId` | `string \\| null` | no | An eligible profile-preferred runtime wins when present. |\n\n- **Response** `200`:\n  ```json\n  { \"runtimeId\": \"claude-code\", \"orderedRuntimeIds\": [\"claude-code\"], \"reason\": \"string\", \"evidence\": \"pool-order\", \"advisory\": true }\n  ```\n  Manual policy returns its strict default as the only ordered runtime.\n  Automatic policies consider only verified-ready members of the saved\n  eligible pool. Cost mode uses the same dated additional-spend evidence\n  already attached to runtime readiness, so local or included-plan runtimes\n  precede metered APIs when that evidence supports the comparison. Unknown\n  cost, latency, and quality retain saved pool order.\n- **Errors**:\n  - `400` when the strict request body is invalid: `{ \"error\": \"A non-empty title and valid suggestion payload are required\" }`.\n  - `409` when no configured runtime is eligible for automatic routing.\n- **Side effects**: reads routing, verified runtime health, profile, and pricing\n  metadata only. It may refresh an expired bounded runtime-health observation,\n  but it does not persist a routing selection.",
+      "wordCount": 185
     },
     {
       "heading": "GET /api/runtimes/openai-compatible/{runtimeId}",
@@ -408,9 +408,9 @@
       "wordCount": 227
     }
   ],
-  "sourceHash": "88db084f63d7555161281c032196dcb252a86531ffac8eaf0593fddecd85b1f1",
+  "sourceHash": "b11c26ef2f737228226e5a1b6493812f9991187ed0bb2b572b56e3e93d797fb8",
   "sourcePath": "api/reference/03-agents-chat-runtimes.md",
-  "sourceStateHash": "2e0b7691e3c3f8c70c6f6e0f6c4b1027e0d48b102ee8db34a0b00690b05d4599",
+  "sourceStateHash": "545af3a72c864dfb1f3443e2e1e0035a798f037d0cee91354c37b656ed3a9e2c",
   "stability": "app-internal",
   "summary": "Document agent profiles, chat conversations, model lists, runtime suggestions, and related context endpoints.",
   "title": "Agents, Chat, And Runtimes API"
