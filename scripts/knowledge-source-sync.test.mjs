@@ -1,12 +1,20 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
+const guideSyncScript = path.join(repoRoot, "_ASSETS/docs/scripts/sync-guide-tracker.mjs");
+const apiSyncScript = path.join(repoRoot, "_ASSETS/api/scripts/sync-api-tracker.mjs");
+
+function peerScriptGate(script) {
+  return existsSync(script)
+    ? false
+    : "requires the separately versioned strategy _ASSETS workspace";
+}
 
 function write(file, content) {
   mkdirSync(path.dirname(file), { recursive: true });
@@ -31,7 +39,9 @@ function sha1(value) {
   return createHash("sha1").update(value).digest("hex");
 }
 
-test("one feature catalog change dirties only chapters mapped to that feature", () => {
+test("one feature catalog change dirties only chapters mapped to that feature", {
+  skip: peerScriptGate(guideSyncScript),
+}, () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "relay-guide-sync-"));
   const tracker = path.join(root, "guide-tracker.json");
   const catalog = path.join(root, "features.md");
@@ -57,7 +67,7 @@ test("one feature catalog change dirties only chapters mapped to that feature", 
   });
   write(catalog, `## Live\n### Alpha\nAlpha changed.\n### Beta\n${originalBeta}\n`);
 
-  const result = runJson("_ASSETS/docs/scripts/sync-guide-tracker.mjs", [
+  const result = runJson(guideSyncScript, [
     "--tracker", tracker,
     "--feature-catalog", catalog,
     "--journey-matrix", matrix,
@@ -70,7 +80,9 @@ test("one feature catalog change dirties only chapters mapped to that feature", 
   assert.deepEqual(result.unknownChapterFeatures, []);
 });
 
-test("one API route change dirties only its owning group and stable routes keep review metadata", () => {
+test("one API route change dirties only its owning group and stable routes keep review metadata", {
+  skip: peerScriptGate(apiSyncScript),
+}, () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "relay-api-sync-"));
   const apiRoot = path.join(root, "src/app/api");
   const trackerPath = path.join(root, "api-tracker.json");
@@ -89,7 +101,7 @@ test("one API route change dirties only its owning group and stable routes keep 
     ],
     endpoints: [],
   });
-  runJson("_ASSETS/api/scripts/sync-api-tracker.mjs", [
+  runJson(apiSyncScript, [
     "--tracker", trackerPath,
     "--repo-root", root,
     "--api-root", apiRoot,
@@ -109,7 +121,7 @@ test("one API route change dirties only its owning group and stable routes keep 
   writeJson(metadataPath, tracker);
 
   write(path.join(apiRoot, "tasks/route.ts"), "export async function GET() {}\nexport async function POST() {}\n");
-  const result = runJson("_ASSETS/api/scripts/sync-api-tracker.mjs", [
+  const result = runJson(apiSyncScript, [
     "--tracker", trackerPath,
     "--repo-root", root,
     "--api-root", apiRoot,
@@ -135,7 +147,7 @@ test("one API route change dirties only its owning group and stable routes keep 
   }
   for (const group of updated.groups) group.dirty = false;
   writeJson(trackerPath, updated);
-  runJson("_ASSETS/api/scripts/sync-api-tracker.mjs", [
+  runJson(apiSyncScript, [
     "--tracker", trackerPath,
     "--metadata-from", metadataPath,
     "--repo-root", root,
@@ -150,7 +162,7 @@ test("one API route change dirties only its owning group and stable routes keep 
   assert.equal(recoveredSettings.reviewed, true, "exact source match recovers authored metadata");
   assert.equal(recoveredSettings.summary, "/api/settings reviewed");
 
-  const acknowledged = runJson("_ASSETS/api/scripts/sync-api-tracker.mjs", [
+  const acknowledged = runJson(apiSyncScript, [
     "--tracker", trackerPath,
     "--repo-root", root,
     "--api-root", apiRoot,
