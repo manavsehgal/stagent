@@ -2,11 +2,11 @@
   "schema": "orionfold.relay-host-portable/v1",
   "release": {
     "npmPackage": "orionfold-relay",
-    "relayVersion": "0.46.3"
+    "relayVersion": "0.46.4"
   },
   "cell": {
     "imageRepository": "ghcr.io/orionfold/relay-cell",
-    "imageDigest": "sha256:98aba662fc4c7bc9b79e5e384178bef2bdaac7977d1be5b490726740c4223ac1"
+    "imageDigest": "sha256:1bdec82cc2e1e8dc174eb15bdb696dc117687bd2a72ee1a98e41305b2d4c3189"
   },
   "substrate": {
     "osId": "ubuntu",

@@ -19,8 +19,8 @@ cannot reach into Cells on other Hosts.
 ## Current release state
 
 The local G-083 control plane is implemented on mainline. The current public,
-signed multi-architecture Cell image is Relay `0.46.3` at immutable index
-digest `sha256:98aba662fc4c7bc9b79e5e384178bef2bdaac7977d1be5b490726740c4223ac1`.
+signed multi-architecture Cell image is Relay `0.46.4` at immutable index
+digest `sha256:1bdec82cc2e1e8dc174eb15bdb696dc117687bd2a72ee1a98e41305b2d4c3189`.
 G-084 has accepted the browser lifecycle UX, and G-101 has accepted the fresh
 customer-identical npm-to-Host-to-managed-Cell release-candidate journey.
 Website G-041/G-047 and Relay G-104/G-105 accepted the commercial fulfillment
@@ -75,9 +75,9 @@ execution authority is the immutable image reference, never a mutable tag:
   "ownerRef": "owner_customer_a",
   "origin": "create",
   "artifact": {
-    "version": "0.46.3",
-    "imageReference": "ghcr.io/orionfold/relay-cell@sha256:98aba662fc4c7bc9b79e5e384178bef2bdaac7977d1be5b490726740c4223ac1",
-    "imageDigest": "sha256:98aba662fc4c7bc9b79e5e384178bef2bdaac7977d1be5b490726740c4223ac1",
+    "version": "0.46.4",
+    "imageReference": "ghcr.io/orionfold/relay-cell@sha256:1bdec82cc2e1e8dc174eb15bdb696dc117687bd2a72ee1a98e41305b2d4c3189",
+    "imageDigest": "sha256:1bdec82cc2e1e8dc174eb15bdb696dc117687bd2a72ee1a98e41305b2d4c3189",
     "schemaMin": 1,
     "schemaMax": 1
   },
