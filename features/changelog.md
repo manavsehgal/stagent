@@ -122,6 +122,13 @@
   install-debt, production build, real runtime-graph task, packed npm 11/12
   installs, and isolated browser proof passed.
 
+  Release-gate correction on 2026-07-25: the newly added Windows Node 22/npm
+  11 lane proved `better-sqlite3@13.0.1` falls into an unsupported source build
+  on the current hosted image. Relay 0.46.4 follows the documented rescue path
+  by restoring `12.11.1`, its npm 12 lifecycle approval/recovery path, and the
+  explicit `prebuild-install` debt allowance. G-138 is deferred rather than
+  claiming partial-platform completion.
+
 - `release-train-hardening` (G-131; initially entered under the already-used
   G-114 ID) — implemented the exact-SHA `cell|host` candidate workflow,
   versioned 24-hour content-addressed receipts, fail-closed tag consumers,

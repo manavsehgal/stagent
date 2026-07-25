@@ -12,6 +12,12 @@
       "version": "2.6.5",
       "ownerPath": "drizzle-kit",
       "scope": "development-only"
+    },
+    {
+      "name": "prebuild-install",
+      "version": "7.1.3",
+      "ownerPath": "better-sqlite3",
+      "scope": "production-native-install"
     }
   ],
   "spreadsheetDependencies": {
@@ -40,5 +46,5 @@
     ],
     "decision": "Reject npm audit force fixes and root-only overrides that disappear for npx customers. Retain authoritative advisory review, maintained spreadsheet dependencies, consumer regressions, and the exact deprecation guard."
   },
-  "disposition": "Replacing stale ExcelJS with maintained reader/writer packages removed six production warnings and the reachable UUID advisory. Relay's Node 22 policy now permits better-sqlite3 13, whose node-addon-api install path removes deprecated prebuild-install from the production closure. Recharts' react-is peer remains direct. Two drizzle-kit warnings remain development-only. Any added or changed warning or guarded runtime dependency fails this guard."
+  "disposition": "Replacing stale ExcelJS with maintained reader/writer packages removed six production warnings and the reachable UUID advisory. Relay retains better-sqlite3 12.11.1 and its prebuild-install warning because the 0.46.4 release matrix proved better-sqlite3 13.0.1 falls into an unsupported source build on Windows Node 22/npm 11. Cross-platform installation takes precedence over cosmetic warning removal until upstream ships a reliable npm 11 prebuilt-install path. Recharts' react-is peer remains direct. Two drizzle-kit warnings remain development-only. Any added or changed warning or guarded runtime dependency fails this guard."
 }

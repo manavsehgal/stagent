@@ -147,7 +147,7 @@
     "@tailwindcss/typography": "^0.5",
     "@tanstack/react-table": "^8.21.3",
     "@types/node": "^22",
-    "better-sqlite3": "13.0.1",
+    "better-sqlite3": "12.11.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2",
     "cmdk": "^1.1.1",
@@ -206,6 +206,9 @@
     "playwright": "1.61.1",
     "tsup": "^8.5",
     "vitest": "^4.1.10"
+  },
+  "allowScripts": {
+    "better-sqlite3": true
   },
   "overrides": {
     "fast-uri": "3.1.4",

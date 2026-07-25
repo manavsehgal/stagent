@@ -1,6 +1,6 @@
 ---
 title: Better SQLite 13 Native Upgrade
-status: completed
+status: deferred
 priority: P2
 milestone: post-mvp
 source: output/staging/2026-07-23-operator-walkthrough/FINDINGS-live.md BUG-1
@@ -41,7 +41,7 @@ quiet without risking my local database.
 
 ## Acceptance criteria
 
-- [x] The release workflow requires `better-sqlite3` 13 to load and execute
+- [ ] The release workflow requires `better-sqlite3` 13 to load and execute
       from the packed Relay artifact on the default hosted-runner architectures
       for macOS, Windows, and Linux under the supported Node 22/npm 11 and
       Node 24/npm 12 lanes. Local Darwin arm64 execution has passed; the
@@ -50,15 +50,31 @@ quiet without risking my local database.
       cross-architecture execution proof.
 - [x] Existing customer database fixtures open, migrate, read, write, back up,
       restore, export, and recover without data loss.
-- [x] Fresh `npx` install emits no accepted production deprecation warning.
+- [ ] Fresh `npx` install emits no accepted production deprecation warning.
 - [x] npm native-binding preflight/recovery remains truthful when the binding is
       absent or unusable.
-- [x] `config/install-dependency-debt.json` removes the obsolete allowance and
+- [ ] `config/install-dependency-debt.json` removes the obsolete allowance and
       rejects its return.
 - [x] Full database, Host, packaging, CLI, production-build, and
       customer-identical smoke gates pass.
 
-## Completion receipt
+## Release-gate correction
+
+The exact Windows Node 22/npm 11 hosted lane failed on 2026-07-25 while
+installing `better-sqlite3@13.0.1`. npm invoked the package's implicit
+`node-gyp rebuild` even though its archive contains a Windows prebuild, then
+failed because the runner's current Visual Studio 18 installation is not
+recognized by npm 11's node-gyp 11.2. The same source passed macOS and Linux
+Node 22/npm 11 and all Node 24/npm 12 lanes, but Relay supports the complete
+matrix rather than a subset.
+
+The documented rescue path therefore restored `better-sqlite3@12.11.1`, the
+npm 12 lifecycle approval, native-binding recovery smoke, and the explicit
+`prebuild-install@7.1.3` debt allowance before publishing Relay 0.46.4. G-138
+remains deferred until upstream provides a Windows Node 22/npm 11 installation
+path that passes without requiring customer build tools.
+
+## Superseded local receipt
 
 Accepted locally on 2026-07-23 with `better-sqlite3@13.0.1`. The production
 closure no longer contains `prebuild-install`, no lifecycle-script approval is
