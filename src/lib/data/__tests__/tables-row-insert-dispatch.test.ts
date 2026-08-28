@@ -118,26 +118,27 @@ describe("addRows end-to-end manifest-trigger dispatch", () => {
     ]);
     const rowId = ids[0]!;
 
-    // Dispatcher is fire-and-forget — poll briefly for the workflow row.
-    const start = Date.now();
-    let workflow: typeof workflows.$inferSelect | undefined;
-    while (Date.now() - start < 2000) {
-      const all = await db
-        .select()
-        .from(workflows)
-        .where(eq(workflows.projectId, "test-app-int"));
-      if (all.length > 0) {
-        workflow = all[0];
-        break;
-      }
-      await new Promise((r) => setTimeout(r, 50));
-    }
+    // Dispatcher is fire-and-forget, so the row appears some time after addRows
+    // resolves. Wait for the row itself rather than for a fixed slice of wall
+    // clock: a hard budget encodes the speed of the machine it was written on,
+    // and this suite runs on CI hosts several times slower than that. vi.waitFor
+    // gives up only when the work genuinely has not happened.
+    const workflow = await vi.waitFor(
+      async () => {
+        const all = await db
+          .select()
+          .from(workflows)
+          .where(eq(workflows.projectId, "test-app-int"));
+        expect(all.length).toBeGreaterThan(0);
+        return all[0]!;
+      },
+      { timeout: 10_000, interval: 50 }
+    );
 
-    expect(workflow).toBeDefined();
     const def = JSON.parse(workflow!.definition);
     expect(def._contextRowId).toBe(rowId);
     expect(def._blueprintId).toBe("research-report");
-  });
+  }, 30_000);
 
   it("does not create a workflow when no manifest subscribes", async () => {
     vi.mocked(registry.listAppsWithManifestsCached).mockReturnValue([]);

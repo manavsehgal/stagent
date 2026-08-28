@@ -172,26 +172,27 @@ describe("Agency Pro 0.1.0 → current (the paid update path)", () => {
       },
     ]);
 
-    // The dispatcher is fire-and-forget (addRows does not await it) — poll
-    // briefly, same contract as tables-row-insert-dispatch.test.ts.
+    // The dispatcher is fire-and-forget (addRows does not await it), so the rows
+    // appear some time after it resolves. Wait for them rather than for a fixed
+    // slice of wall clock — same contract as tables-row-insert-dispatch.test.ts.
     const { db } = await import("@/lib/db");
     const { workflows } = await import("@/lib/db/schema");
     const { eq } = await import("drizzle-orm");
-    let spawned: { definition: string }[] = [];
-    const start = Date.now();
-    while (Date.now() - start < 2000) {
-      spawned = await db
-        .select()
-        .from(workflows)
-        .where(eq(workflows.projectId, "relay-agency-pro"));
-      if (spawned.length > 0) break;
-      await new Promise((r) => setTimeout(r, 50));
-    }
-    expect(spawned.length).toBeGreaterThanOrEqual(1);
+    const spawned = await vi.waitFor(
+      async () => {
+        const rows = await db
+          .select()
+          .from(workflows)
+          .where(eq(workflows.projectId, "relay-agency-pro"));
+        expect(rows.length).toBeGreaterThanOrEqual(1);
+        return rows;
+      },
+      { timeout: 10_000, interval: 50 }
+    );
     expect(JSON.stringify(spawned.map((w) => w.definition))).toContain(
       "intake-pipeline"
     );
-  });
+  }, 30_000);
 
   it("D4: without a license the update refuses renewal-voiced and 0.1.0 keeps working, byte-identical", async () => {
     await saveRealLicense();

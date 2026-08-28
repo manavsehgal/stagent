@@ -123,22 +123,23 @@ describe("evaluateTriggers blueprintId dispatch (HANDOFF.md F13)", () => {
       { data: { topic: "f13 trigger payload", depth: "standard" } },
     ]);
 
-    // Dispatcher is fire-and-forget — poll briefly for the workflow row.
-    const start = Date.now();
-    let workflow: typeof workflows.$inferSelect | undefined;
-    while (Date.now() - start < 2000) {
-      const all = await db
-        .select()
-        .from(workflows)
-        .where(eq(workflows.projectId, APP_ID));
-      if (all.length > 0) {
-        workflow = all[0];
-        break;
-      }
-      await new Promise((r) => setTimeout(r, 50));
-    }
+    // Dispatcher is fire-and-forget, so the row appears some time after addRows
+    // resolves. Wait for the row itself rather than for a fixed slice of wall
+    // clock: a hard budget encodes the speed of the machine it was written on,
+    // and this suite runs on CI hosts several times slower than that. vi.waitFor
+    // gives up only when the work genuinely has not happened.
+    const workflow = await vi.waitFor(
+      async () => {
+        const all = await db
+          .select()
+          .from(workflows)
+          .where(eq(workflows.projectId, APP_ID));
+        expect(all.length).toBeGreaterThan(0);
+        return all[0]!;
+      },
+      { timeout: 10_000, interval: 50 }
+    );
 
-    expect(workflow).toBeDefined();
     const def = JSON.parse(workflow!.definition);
     expect(def._blueprintId).toBe("research-report");
     expect(typeof def._contextRowId).toBe("string");
@@ -150,7 +151,7 @@ describe("evaluateTriggers blueprintId dispatch (HANDOFF.md F13)", () => {
       .where(eq(userTableTriggers.id, TRIGGER_ID))
       .get();
     expect(trig?.fireCount).toBe(1);
-  });
+  }, 30_000);
 
   it("warns instead of silently dropping when run_workflow has neither workflowId nor blueprintId", async () => {
     const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
