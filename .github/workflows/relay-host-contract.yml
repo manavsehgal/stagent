@@ -26,7 +26,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      # fetch-depth: 0 because the reproduction smoke resolves a prior release
+      # ref out of ordinary history. The default depth-1 checkout fetches no
+      # tags and no history, so that lookup fails with "not a valid object
+      # name" before any build starts. publish-relay-cell.yml already checks
+      # out this way for the same reason.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # The artifact build exports OCI archives (type=oci). The stock docker
+      # driver cannot do that, so without a buildx builder the export fails
+      # with "OCI exporter is not supported for the docker driver" on any
+      # runner without the containerd image store. Same action and pin as
+      # publish-relay-cell.yml, which provisions one for the same build.
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
       - uses: actions/setup-node@v4
         with:
           node-version: 22.23.1
