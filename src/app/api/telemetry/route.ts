@@ -12,6 +12,7 @@ import { db } from "@/lib/db";
 import { tasks, notifications, projects, workflows } from "@/lib/db/schema";
 import { getBudgetGuardrailSnapshot } from "@/lib/settings/budget-guardrails";
 import { getWorkspaceContext } from "@/lib/environment/workspace-context";
+import { getRelayCellBoundary } from "@/lib/instance/cell-boundary";
 import {
   getAgentActivityByHour,
   getCompletionsByDay,
@@ -170,6 +171,11 @@ export async function GET() {
     const runtimeSdkVersion = sdkPackage ? resolveSdkVersion(sdkPackage) : null;
 
     const host = getWorkspaceContext();
+    // A managed Cell's identity, so the HOST cell can name the Cell rather than
+    // the directory it was launched from. Container runtimes pin the launch cwd
+    // to a fixed path inside the image, which makes the folder name a constant
+    // there and identical for every Cell on the same Host.
+    const cellId = getRelayCellBoundary().instanceId;
     const { cpuLoadPct, memUsedPct } = getHostMetrics();
 
     const snapshot: TelemetrySnapshot = {
@@ -195,6 +201,7 @@ export async function GET() {
       },
       host: {
         cwd: host.cwd,
+        cellId,
         folderName: host.folderName,
         branch: host.gitBranch,
         cpuLoadPct,

@@ -1,5 +1,19 @@
 # Feature Changelog
 
+## 2026-07-30
+
+### Completed
+
+- `memo-inline-svg-commonmark-safety` (G-106) — repaired the five canonical
+  Packs memo figures so byte-preserving CommonMark ingestion cannot expose SVG
+  geometry as plaintext. The production memo gate now rejects blank-line and
+  CRLF raw-HTML boundary breaks, unbalanced figure/SVG tags, duplicate article
+  IDs, unresolved references, and cross-SVG reference leakage. Strategy source
+  commit `996a408` passed all seven focused fixtures, all five affected article
+  gates, and the complete eleven-memo design-system, claim, SVG, screenshot,
+  and scrub gate. Website consumer sync and rendered light/dark acceptance
+  remain separately owned and gated.
+
 ## 2026-07-24
 
 ### Started

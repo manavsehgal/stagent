@@ -1,5 +1,5 @@
 ---
-generated: 2026-07-21
+generated: 2026-07-30
 mode: next-steps
 ---
 
@@ -8,46 +8,39 @@ mode: next-steps
 > Non-authoritative snapshot. `_IDEAS/backlog.md` remains Relay's canonical
 > live portfolio and goal queue.
 
-## Next Steps — 2026-07-21
+## Next Steps — 2026-07-30
 
 ### Recommendation
 
-**Do this next:** After the bounded G-106 producer repair is accepted, complete
-**G-108 — Ship the provider-neutral Relay Host Linux VM playbook**.
+**Do this next:** Implement **G-014 — Refuse installed cross-pack ownership
+collisions**.
 
-**Why:** G-107 accepted the portable contract and a bounded provider sequence.
-G-108 now gives customers value on compatible customer-owned Ubuntu VMs without
-another cloud API, persistent Relay credential custody, or an unsupported named
-provider claim. AWS Lightsail, Azure, GCP and EC2 follow as independent goals;
-G-086 aggregates only the accepted threshold.
+**Why:** G-106 is accepted and removed from the live queue. G-014 is now the
+highest ready autonomous goal and protects installed customer data from a pack
+silently redefining a primitive already owned by another installed pack.
 
-**Invoke:** Follow `features/cross-cloud-relay-host-portability-plan.md` through
-the manifest/preflight, secret-free bootstrap, local compatible-VM conformance,
-packaging/docs and release-evidence slices. Keep support wording, publish and
-release separately gated.
+**Invoke:** Use `/product-manager` to execute G-014 through its existing
+pack-install regression boundary.
 
-**Priority category:** phase advancement — Customer-owned Relay Host R4P1.
+**Priority category:** highest ready standalone implementation.
 
 ### Context
 
-- Active workstream: Customer-owned Relay Host.
-- Relay R4 guided beta: accepted through G-104/G-105.
-- Website response: G-047 released 2026-07-20.
-- G-107: accepted 2026-07-21 with a **GO** decision.
-- Next ready Relay goal after G-106: G-108.
-- G-103 Marketplace research: deferred by operator.
-- G-109–G-112: ordered, provider/account/spend-gated verified profiles.
-- Later dependency-gated goal: amended G-086 portability/GA proof.
-- Newly specified product gap: customer Cell access is manual; automated
-  hostname/routing/bootstrap handoff, invitations, and multi-user identity are
-  not shipped. It remains a separate customer-access follow-on and is not
-  hidden inside G-108 or any provider adapter.
+- Current public release: Relay `0.46.4`.
+- G-106 is complete at immutable Strategy source commit `996a408`; Website
+  consumer sync and rendered acceptance remain a separately owned action.
+- G-014 is the first ready autonomous Relay implementation.
+- Customer-owned Relay Host is paused; its next increment is G-109 (AWS
+  Lightsail), which requires provider, account, region, spend, mutation, and
+  teardown authorization.
+- Enterprise connectors is paused; its next deliberate focus change is G-073
+  research/specification.
 
 ### If You Have More Time
 
-1. Groom customer Cell access provisioning from the canonical Website FAQ when
-   the operator selects that experience; it is not a playbook prerequisite.
-2. Keep G-086 dormant until G-108, G-109 and G-110 are accepted.
+1. Resume G-109 only when the operator intentionally reactivates the Host/cloud
+   release train and grants its external-resource gates.
+2. Resume G-073 only after an explicit focus change to Enterprise connectors.
 
 ---
 
