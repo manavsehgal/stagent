@@ -39,9 +39,15 @@ export interface TelemetrySnapshot {
     /** 7 daily failure counts (index 6 = today). */
     failures7d: number[];
   };
-  /** Workspace + live host context for the HOST cell. */
+  /** Cell identity + workspace + live host context for the HOST cell. */
   host: {
     cwd: string;
+    /**
+     * The active Cell's instance id, when it has one — a Host-supplied
+     * RELAY_CELL_ID or a git-backed bootstrap id. Null for dev clones and
+     * plain npx installs, which have no cell identity to report.
+     */
+    cellId: string | null;
     /** Basename of cwd — compact display value. */
     folderName: string;
     branch: string | null;

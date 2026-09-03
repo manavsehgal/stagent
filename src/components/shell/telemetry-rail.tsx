@@ -29,7 +29,7 @@ import type { TelemetrySnapshot } from "./telemetry-types";
 
 // The standing instrument cluster: a single dense horizontal row beneath the app
 // bar (mirrors `.hp-rail`). A cockpit for a multi-agent harness — eight real
-// cells: HOST (folder · cpu/mem) · RUNTIME (label · sdk version) · TASKS
+// cells: HOST (cell id or folder · cpu/mem) · RUNTIME (label · sdk version) · TASKS
 // (running + 24h activity spark) · THROUGHPUT (completed today + 7d spark) ·
 // FAILURES (failed + 7d spark, red) · REVIEW (pending) · SPEND TODAY · SPEND TO
 // DATE — plus a live/error status foot. No fabricated data: while loading, cells
@@ -38,6 +38,18 @@ import type { TelemetrySnapshot } from "./telemetry-types";
 // into sub-lines so the live throughput signal owns the foreground. The SPEND
 // cells render real metered ledger sums; the budget cap and any flat plan price
 // live in the sub-line, named as what they are — never presented as spend.
+
+// Value for the HOST cell: name the Cell when it has an identity, and fall back
+// to the launch folder for dev clones and npx installs, which have none. A
+// managed Cell's folder name is a fixed path baked into its runtime image, so it
+// identifies nothing there — the cell id is the only answer that distinguishes
+// one Cell from another.
+function hostValue(
+  cellId: string | null | undefined,
+  folderName: string | null | undefined,
+): string {
+  return cellId ?? folderName ?? "—";
+}
 
 // Compose the HOST sub-line from whatever live metrics the platform reports;
 // falls back to git branch so the cell is never empty.
@@ -270,7 +282,7 @@ export function TelemetryRail() {
           label="Host"
           icon={<Server aria-hidden />}
           loading={loading}
-          value={data?.host.folderName ?? "—"}
+          value={hostValue(data?.host.cellId, data?.host.folderName)}
           sub={hostSub(data?.host.cpuLoadPct, data?.host.memUsedPct, branch)}
         />
         <RailCell

@@ -33,6 +33,7 @@ function snapshot(overrides: Partial<TelemetrySnapshot> = {}): TelemetrySnapshot
     trends: { agentActivity24h: [], completions7d: [], failures7d: [] },
     host: {
       cwd: "/tmp/x",
+      cellId: null,
       folderName: "x",
       branch: null,
       cpuLoadPct: null,
@@ -176,6 +177,57 @@ describe("TelemetryRail drill-down links", () => {
       "data-telemetry-card",
     );
     expect(screen.getAllByRole("link", { name: "Open cost dashboard" })).toHaveLength(2);
+  });
+});
+
+describe("TelemetryRail host cell", () => {
+  it("names the Cell when the snapshot carries a cell id", () => {
+    stubTelemetry(
+      snapshot({
+        host: {
+          // A container runtime pins the launch cwd, so every Cell on the same
+          // image reports the identical folder name — only the id separates them.
+          cwd: "/var/lib/relay/workspace",
+          cellId: "acme-staging",
+          folderName: "workspace",
+          branch: null,
+          cpuLoadPct: 3,
+          memUsedPct: 49,
+        },
+      }),
+    );
+    render(<TelemetryRail />);
+
+    expect(screen.getByText("acme-staging")).toBeInTheDocument();
+    expect(screen.queryByText("workspace")).not.toBeInTheDocument();
+    expect(screen.getByText("cpu 3% · mem 49%")).toBeInTheDocument();
+  });
+
+  it("falls back to the launch folder when there is no cell identity", () => {
+    stubTelemetry(
+      snapshot({
+        host: {
+          cwd: "/home/dev/relay",
+          cellId: null,
+          folderName: "relay",
+          branch: "main",
+          cpuLoadPct: null,
+          memUsedPct: null,
+        },
+      }),
+    );
+    render(<TelemetryRail />);
+
+    expect(screen.getByText("relay")).toBeInTheDocument();
+    expect(screen.getByText("git:main")).toBeInTheDocument();
+  });
+
+  it("shows the placeholder rather than a fabricated host while loading", () => {
+    stubTelemetry(null);
+    render(<TelemetryRail />);
+
+    expect(screen.getByText("Host")).toBeInTheDocument();
+    expect(screen.queryByText("workspace")).not.toBeInTheDocument();
   });
 });
 
