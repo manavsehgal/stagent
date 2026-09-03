@@ -96,6 +96,10 @@ CLAUDE.local.md
 .claude/rules/
 .claude/hooks/
 .claude/handoff-profile.yaml
+# settings.json is dev-time harness steering too: it names private _REFER docs
+# and wires a PreToolUse hook to .claude/hooks/, which is itself untracked — so
+# a public copy leaked internal paths and pointed clones at a missing script.
+.claude/settings.json
 
 # AI Native Business book — authoring + content extracted to a private peer
 # repository (2026-06). The book stays out of the public Relay repository and
