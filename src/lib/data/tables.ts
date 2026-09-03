@@ -6,6 +6,15 @@ import {
   userTableColumns,
   userTableRows,
   userTableTemplates,
+  userTableViews,
+  userTableTriggers,
+  userTableRelationships,
+  userTableImports,
+  userTableRowHistory,
+  tableDocumentInputs,
+  taskTableInputs,
+  workflowTableInputs,
+  scheduleTableInputs,
   projects,
 } from "@/lib/db/schema";
 import type {
@@ -122,7 +131,34 @@ export async function updateTable(id: string, updates: UpdateTableInput) {
 }
 
 export async function deleteTable(id: string) {
-  // FK-safe: delete children first
+  // FK-safe: every table that references this one must be cleared first, or
+  // SQLite rejects the parent delete with "FOREIGN KEY constraint failed" and
+  // the table survives the request.
+  //
+  // Rows and columns are not the only children. A table also owns its views
+  // (grid, chart and joined), its workflow triggers, its row history and its
+  // import records, and it is referenced by the four junction tables that link
+  // it to documents, tasks, workflows and schedules. Deleting a table that had
+  // so much as one saved chart used to fail.
+  //
+  // Relationships are matched on BOTH ends: a relationship whose target is this
+  // table blocks the delete just as surely as one whose source is.
+  await db.delete(userTableRowHistory).where(eq(userTableRowHistory.tableId, id));
+  await db.delete(userTableTriggers).where(eq(userTableTriggers.tableId, id));
+  await db.delete(userTableImports).where(eq(userTableImports.tableId, id));
+  await db.delete(userTableViews).where(eq(userTableViews.tableId, id));
+  await db
+    .delete(userTableRelationships)
+    .where(
+      or(
+        eq(userTableRelationships.fromTableId, id),
+        eq(userTableRelationships.toTableId, id),
+      ),
+    );
+  await db.delete(tableDocumentInputs).where(eq(tableDocumentInputs.tableId, id));
+  await db.delete(taskTableInputs).where(eq(taskTableInputs.tableId, id));
+  await db.delete(workflowTableInputs).where(eq(workflowTableInputs.tableId, id));
+  await db.delete(scheduleTableInputs).where(eq(scheduleTableInputs.tableId, id));
   await db.delete(userTableRows).where(eq(userTableRows.tableId, id));
   await db.delete(userTableColumns).where(eq(userTableColumns.tableId, id));
   await db.delete(userTables).where(eq(userTables.id, id));
