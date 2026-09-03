@@ -15,7 +15,17 @@ local even when they are useful to maintainers.
 | `docs/RELEASING.md`, `docs/plugin-security.md`, `docs/codex-browser-runbook.md`, this policy | Contributor documentation | Tracked and link-checked. |
 | `features/**`, `.agents/**`, application source, tests, scripts, workflows, and design-system files | Public product/contributor record | Tracked; private identifiers are prohibited except in exact negative-fixture allowlists. |
 | `.archive/handoff/**`, `HANDOFF.md`, `CODEX-CC.md`, `OPERATOR-REQUIREMENTS.md` | Internal operational continuity/history | Preserved locally, ignored by Git, and protected with `export-ignore`. |
+| `.claude/settings.json`, `.claude/settings.local.json`, and `.claude/{skills,hooks,agents,commands,rules,plans,reference}/**`, `.claude/handoff-profile.yaml` | Dev-time agent-harness steering | Kept on disk, ignored by Git, and refused by the boundary checker. `.claude/apps/starters/**` is excluded from this class: it is product seed data the homepage renders. `.codex/**` is public by design — its hook script is tracked beside its config. |
 | Retired `docs/superpowers/plans/**`, `docs/superpowers/specs/**`, and `.claude/plans/**` paths | Internal session planning/history | Absent from the working tree and ignored so obsolete tooling cannot recreate them. Durable product decisions live in feature specs, TDRs, changelog entries, or historical Git commits. |
+
+On 2026-09-03 `.claude/settings.json` was un-tracked. It had stayed published
+because `.gitignore` only prevents NEW files from being added: the sibling
+`.claude/` steering paths were ignored from the start, while this one was
+already tracked. It exposed no credentials, but it named two gitignored
+`_REFER/` documents and wired a PreToolUse hook to an untracked script, so a
+clone received a settings file pointing at a file that does not exist. The
+paths are now in `INTERNAL_PATHS`, making the classification enforceable rather
+than advisory.
 
 The approved 2026-07-13 classification removed 125 internal records from the
 tracked tree: 74 archived handoffs, 48 session plans/specifications, and three

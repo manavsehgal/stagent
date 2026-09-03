@@ -37,6 +37,15 @@ export const INTERNAL_PATHS = [
   /^CODEX-CC\.md$/,
   /^OPERATOR-REQUIREMENTS\.md$/,
   /^docs\/superpowers\/(?:plans|specs)(?:\/|$)/,
+  // Dev-time agent-harness steering. These are gitignored as "secret sauce",
+  // but .gitignore only stops NEW files: anything already tracked (as
+  // .claude/settings.json was until 2026-09-03) stays published silently. This
+  // makes the classification enforceable instead of advisory.
+  // .claude/apps/ is deliberately NOT listed — apps/starters/ is product seed
+  // data the homepage renders through @/lib/apps/starters.
+  /^\.claude\/settings(?:\.local)?\.json$/,
+  /^\.claude\/(?:skills|hooks|agents|commands|rules|plans|reference)(?:\/|$)/,
+  /^\.claude\/handoff-profile\.yaml$/,
 ];
 
 const RULES = [

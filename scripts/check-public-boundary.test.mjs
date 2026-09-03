@@ -47,6 +47,14 @@ test("rejects every private-residue class with a named finding", () => {
     ["notes.md", "See .claude/plans/session-plan.md", "operational-continuity-reference"],
     ["HANDOFF.md", "live work", "internal-path"],
     ["docs/superpowers/plans/old.md", "history", "internal-path"],
+    // Dev-time agent-harness steering must never be tracked publicly.
+    // .claude/settings.json was published until 2026-09-03 because .gitignore
+    // alone cannot un-track a file that is already tracked.
+    [".claude/settings.json", "{}", "internal-path"],
+    [".claude/settings.local.json", "{}", "internal-path"],
+    [".claude/skills/x/SKILL.md", "steering", "internal-path"],
+    [".claude/hooks/secrets-guard.py", "print(1)", "internal-path"],
+    [".claude/handoff-profile.yaml", "a: 1", "internal-path"],
   ];
 
   for (const [file, content, expectedRule] of cases) {
@@ -54,6 +62,25 @@ test("rejects every private-residue class with a named finding", () => {
     assert.ok(
       findings.some(({ rule }) => rule === expectedRule),
       `${file} should produce ${expectedRule}: ${JSON.stringify(findings)}`,
+    );
+  }
+});
+
+test("permits the public .claude and .codex surfaces", () => {
+  // .claude/apps/starters/ is product seed data the homepage renders through
+  // @/lib/apps/starters, and .codex/ is self-consistent public config whose
+  // hook script is tracked beside it. Neither may be swept up by the
+  // internal-path rule that guards the dev-time steering surfaces.
+  for (const file of [
+    ".claude/apps/starters/finance-pack.yaml",
+    ".claude/.gitignore",
+    ".codex/hooks.json",
+    ".codex/hooks/secrets-guard.mjs",
+  ]) {
+    assert.deepEqual(
+      scanEntries([{ path: file, content: "id: ok\n" }]),
+      [],
+      `${file} must remain publishable`,
     );
   }
 });
