@@ -22,6 +22,10 @@ import {
 } from "./format";
 import { mergeBundle } from "./bundle";
 import {
+  assertNoInstalledOwnerCollisions,
+  displayNameForTable,
+} from "./installed-owner";
+import {
   verifyPackProvenance,
   packProvenanceBytes,
   packInstallPolicy,
@@ -363,6 +367,51 @@ export async function installPack(
           );
         }
       }
+    }
+
+    // 2e. Installed cross-pack ownership (G-014) — the LAST check before any
+    // write. A logical table id is a shared name with exactly one owner: a peer
+    // may re-list it with the same columns (the relay-agency-pro -> relay-agency
+    // pattern), but a pack that REDEFINES it with different columns would
+    // install clean and leave a silent divergent second table, because the
+    // creation below mints a fresh UUID per table.
+    //
+    // Ownership is read from the DATABASE, not from installed manifests:
+    // `rewriteTableRefs` rewrites every id to a real UUID before a manifest is
+    // dropped, so logical ids do not survive there. Live tables also cover
+    // community packs that were never registered in the static taxonomy.
+    //
+    // The build-time gate (`scripts/check-pack-taxonomy.mjs`) covers only
+    // bundled templates, and `mergeBundle` covers only ids merged into ONE app,
+    // so neither sees a side-by-side third-party install.
+    {
+      const { listTables: listAllTables, getColumns: getTableColumns } =
+        await import("@/lib/data/tables");
+      const installedTables = await listAllTables();
+      const foreign = installedTables.filter(
+        (t) => t.projectId && t.projectId !== pack.meta.id
+      );
+      // Only tables whose NAME could collide need their columns read, which
+      // keeps this to a handful of queries instead of one per installed table.
+      const declaredTables = pack.manifest.tables.map((table) => ({
+        id: table.id,
+        name: displayNameForTable(table),
+        columns: (table.columns as string[] | undefined) ?? [],
+      }));
+      const declaredNames = new Set(declaredTables.map((t) => t.name));
+      const candidates = foreign.filter((t) => declaredNames.has(t.name));
+      const installedOwned = await Promise.all(
+        candidates.map(async (t) => ({
+          projectId: t.projectId as string,
+          name: t.name,
+          columns: (await getTableColumns(t.id)).map((c) => c.name),
+        }))
+      );
+      assertNoInstalledOwnerCollisions(
+        pack.meta.id,
+        declaredTables,
+        installedOwned
+      );
     }
 
     // 3. DB-write boundary (bounded, reuses existing seams).

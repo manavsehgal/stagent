@@ -178,6 +178,28 @@ export class BundleCollisionError extends Error {
   }
 }
 
+/**
+ * Thrown when an incoming pack REDEFINES a logical table that an already-
+ * installed pack owns — same logical id, different columns.
+ *
+ * Distinct from `BundleCollisionError`, which guards ids merged into ONE app
+ * during a bundle flatten. This one guards SIDE-BY-SIDE installs, where each
+ * pack becomes its own app: `install.ts` mints a fresh UUID per table, so a
+ * divergent redefinition would otherwise install clean and leave two tables
+ * wearing the same name with different shapes (Principle #1 — no silent
+ * shadow).
+ *
+ * Sharing a logical id is legal and is how composition works: a pack that
+ * declares the id with the SAME columns is re-listing a peer's table (the
+ * `relay-agency-pro` → `relay-agency` pattern) and is never a collision.
+ */
+export class InstalledOwnerCollisionError extends Error {
+  constructor(message: string, readonly cause?: unknown) {
+    super(message);
+    this.name = "InstalledOwnerCollisionError";
+  }
+}
+
 /** A pack is a BUNDLE iff it declares a non-empty `bundle` child list. */
 export function isBundle(meta: PackMeta): boolean {
   return Array.isArray(meta.bundle) && meta.bundle.length > 0;

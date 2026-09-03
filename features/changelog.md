@@ -1,5 +1,20 @@
 # Feature Changelog
 
+## 2026-09-03
+
+### Completed
+
+- `pack-installed-owner-collision` (G-014) — installing a pack can no longer
+  quietly redefine a table another installed pack owns. Two packs sharing a
+  table is how composition works, so a pack that lists an existing table with
+  the same columns still installs normally. But a pack that claims the same
+  table with a different shape is now refused before anything is written, with
+  a message naming both packs, the table, and exactly which columns differ.
+  Previously that pack installed cleanly and left two tables wearing the same
+  name with different shapes. Verified through the real install path: the
+  refusal leaves no app, no table and no project behind, and re-installing a
+  pack you already have is unaffected.
+
 ## 2026-07-30
 
 ### Completed
