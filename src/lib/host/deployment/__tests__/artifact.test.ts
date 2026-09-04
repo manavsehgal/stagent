@@ -1,20 +1,27 @@
 import { describe, expect, it, vi } from "vitest";
+import cellRelease from "../relay-cell-release.json";
 import { currentRelayCellRelease } from "../artifact";
 
-// Cell images are published before their digest can be bound into the matching
-// npm release. Keep this unit fixture on the last accepted authority; the npm
-// workflow owns the fail-closed package-version parity guard.
-vi.mock("@/lib/config/version", () => ({ relayProductVersion: () => "0.46.4" }));
+// The Cell manifest is the single source of truth for the version this test
+// must pretend to be: a candidate Cell is published BEFORE its digest is bound
+// into the npm release, so during that window the manifest deliberately lags
+// package.json and a hardcoded literal here goes stale every release. Read it.
+vi.mock("@/lib/config/version", () => ({
+  relayProductVersion: () => cellRelease.relayVersion,
+}));
 
 describe("Relay Cell release authority", () => {
   it("binds the current Relay version to the accepted immutable public digest", () => {
-    expect(currentRelayCellRelease()).toEqual({
-      schema: "orionfold.relay-cell-release/v1",
-      relayVersion: "0.46.4",
-      imageRepository: "ghcr.io/orionfold/relay-cell",
-      imageDigest: "sha256:1bdec82cc2e1e8dc174eb15bdb696dc117687bd2a72ee1a98e41305b2d4c3189",
-      publishedAt: "2026-07-25T13:39:27Z",
-      sourceTag: "cell-v0.46.4",
-    });
+    // Compare against the manifest itself, not a copy of its values: this
+    // asserts the loader parses and returns the accepted authority, and the
+    // shape checks below pin what "accepted" has to mean.
+    expect(currentRelayCellRelease()).toEqual(cellRelease);
+
+    expect(cellRelease.schema).toBe("orionfold.relay-cell-release/v1");
+    expect(cellRelease.imageRepository).toBe("ghcr.io/orionfold/relay-cell");
+    // An immutable digest, never a mutable tag.
+    expect(cellRelease.imageDigest).toMatch(/^sha256:[a-f0-9]{64}$/);
+    // The Cell tag line is disjoint from the npm one and must stay that way.
+    expect(cellRelease.sourceTag).toBe(`cell-v${cellRelease.relayVersion}`);
   });
 });

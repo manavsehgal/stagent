@@ -1,4 +1,5 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import cellRelease from "../relay-cell-release.json";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -7,9 +8,13 @@ import { signEnvelope } from "@/lib/licensing/__tests__/sign-helper";
 import { RelayHostError } from "@/lib/host/supervisor/errors";
 import { HostDeploymentService } from "../service";
 
-// See artifact.test.ts: candidate Cell publication necessarily precedes the
-// matching digest authority committed for the npm release.
-vi.mock("@/lib/config/version", () => ({ relayProductVersion: () => "0.46.4" }));
+// The Cell manifest is the single source of truth for the version this test
+// must pretend to be: a candidate Cell is published BEFORE its digest is bound
+// into the npm release, so during that window the manifest deliberately lags
+// package.json and a hardcoded literal here goes stale every release. Read it.
+vi.mock("@/lib/config/version", () => ({
+  relayProductVersion: () => cellRelease.relayVersion,
+}));
 
 const roots: string[] = [];
 function fixture(options: { licensed?: boolean; managedCells?: number } = {}) {
