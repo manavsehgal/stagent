@@ -9,12 +9,12 @@ export const RELEASE_PREFLIGHT_KIND = "orionfold.release-preflight";
 export const RELEASE_PREFLIGHT_EXPIRY_HOURS = 24;
 export const RELEASE_PREFLIGHT_SCOPES = ["cell", "host"];
 export const RELEASE_PREFLIGHT_LANES = [
-  { id: "macos-node22-npm11", os: "macos", node: "22.23.1", npm: "11.6.0" },
-  { id: "macos-node24-npm12", os: "macos", node: "24.15.0", npm: "12.0.1" },
-  { id: "windows-node22-npm11", os: "windows", node: "22.23.1", npm: "11.6.0" },
-  { id: "windows-node24-npm12", os: "windows", node: "24.15.0", npm: "12.0.1" },
-  { id: "linux-node22-npm11", os: "linux", node: "22.23.1", npm: "11.6.0" },
-  { id: "linux-node24-npm12", os: "linux", node: "24.15.0", npm: "12.0.1" },
+  { id: "macos-node22-npm11", os: "macos", node: "22.23.2", npm: "11.6.0" },
+  { id: "macos-node24-npm12", os: "macos", node: "24.20.0", npm: "12.0.1" },
+  { id: "windows-node22-npm11", os: "windows", node: "22.23.2", npm: "11.6.0" },
+  { id: "windows-node24-npm12", os: "windows", node: "24.20.0", npm: "12.0.1" },
+  { id: "linux-node22-npm11", os: "linux", node: "22.23.2", npm: "11.6.0" },
+  { id: "linux-node24-npm12", os: "linux", node: "24.20.0", npm: "12.0.1" },
 ];
 
 export const RELEASE_PREFLIGHT_POLICY_PATHS = [
