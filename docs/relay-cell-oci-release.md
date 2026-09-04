@@ -1,8 +1,8 @@
 # Relay Cell OCI acquisition and verification
 
 > Publication status (2026-07-25): the protected workflow published and verified Relay Cell
-> `v0.46.4` for `linux/amd64` and `linux/arm64`. The immutable accepted index is
-> `sha256:1bdec82cc2e1e8dc174eb15bdb696dc117687bd2a72ee1a98e41305b2d4c3189`.
+> `v0.46.5` for `linux/amd64` and `linux/arm64`. The immutable accepted index is
+> `sha256:45897b71e74fb7847ae6223dfe8fd346a5a835f06493d2a4f8a3f4cf94112644`.
 > This makes the free Cell runtime available; it does not make the separately
 > licensed Relay Host journey customer-ready.
 
@@ -23,7 +23,7 @@ Host, not by making the Cell image private.
 Release notes and the Host manifest provide a value such as:
 
 ```text
-ghcr.io/orionfold/relay-cell@sha256:1bdec82cc2e1e8dc174eb15bdb696dc117687bd2a72ee1a98e41305b2d4c3189
+ghcr.io/orionfold/relay-cell@sha256:45897b71e74fb7847ae6223dfe8fd346a5a835f06493d2a4f8a3f4cf94112644
 ```
 
 Use that complete reference for deployment. `vX.Y.Z`, `vX.Y`, and `stable`
@@ -33,7 +33,7 @@ is the authority. The tag `latest` is not part of Relay's publication policy.
 Pull and inspect the accepted digest:
 
 ```bash
-export RELAY_CELL_DIGEST='sha256:1bdec82cc2e1e8dc174eb15bdb696dc117687bd2a72ee1a98e41305b2d4c3189'
+export RELAY_CELL_DIGEST='sha256:45897b71e74fb7847ae6223dfe8fd346a5a835f06493d2a4f8a3f4cf94112644'
 docker pull "ghcr.io/orionfold/relay-cell@$RELAY_CELL_DIGEST"
 docker buildx imagetools inspect "ghcr.io/orionfold/relay-cell@$RELAY_CELL_DIGEST"
 ```
@@ -150,7 +150,7 @@ at 131,659,906 image bytes and arm64 digest
 at 130,821,105 image bytes. The public index is an acquisition artifact, not a
 paid entitlement or a Host release. `stable` remains a separately gated
 promotion pointer; when no separately authorized promotion is performed,
-`stable` remains unmoved. Exact `v0.46.4` and the accepted index digest are the current
+`stable` remains unmoved. Exact `v0.46.5` and the accepted index digest are the current
 discovery and authority surfaces.
 
 Primary references: [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry),
