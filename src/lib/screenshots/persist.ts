@@ -49,11 +49,15 @@ export async function persistScreenshot(
     // Decode
     const buffer = Buffer.from(base64Data, "base64");
 
-    // Extract dimensions
-    const { imageSize } = await import("image-size");
-    const dimensions = imageSize(new Uint8Array(buffer));
-    const width = dimensions.width ?? 0;
-    const height = dimensions.height ?? 0;
+    // Extract dimensions. sharp is already a dependency (it renders the
+    // thumbnail below) and reads the header without the image-size parser
+    // advisories, which have no published fix. Like image-size it throws on
+    // data that is not a decodable image, which is what makes the outer catch
+    // return null for invalid input.
+    const sharpModule = (await import("sharp")).default;
+    const metadata = await sharpModule(buffer).metadata();
+    const width = metadata.width ?? 0;
+    const height = metadata.height ?? 0;
 
     // Ensure directory exists
     mkdirSync(screenshotsDir, { recursive: true });

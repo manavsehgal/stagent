@@ -5,17 +5,20 @@ const SUPPORTED_FORMATS = new Set(["png", "jpg", "jpeg", "gif", "webp"]);
 
 /** Extract image dimensions metadata — agents use the file path to view images */
 export async function processImage(filePath: string): Promise<ProcessorResult> {
-  const { imageSize } = await import("image-size");
+  // sharp rather than image-size: it is already a dependency, and every
+  // published image-size version carries unfixed parser DoS advisories.
+  const sharp = (await import("sharp")).default;
   const buffer = await readFile(filePath);
-  const dimensions = imageSize(new Uint8Array(buffer));
+  const metadata = await sharp(buffer).metadata();
+  const format = metadata.format;
 
-  if (dimensions.type && !SUPPORTED_FORMATS.has(dimensions.type)) {
-    throw new Error(`Unsupported image format: ${dimensions.type}`);
+  if (format && !SUPPORTED_FORMATS.has(format)) {
+    throw new Error(`Unsupported image format: ${format}`);
   }
 
   const meta = [
-    `Image: ${dimensions.width}x${dimensions.height}`,
-    `Format: ${dimensions.type}`,
+    `Image: ${metadata.width}x${metadata.height}`,
+    `Format: ${format}`,
   ].join("\n");
   return { extractedText: meta };
 }

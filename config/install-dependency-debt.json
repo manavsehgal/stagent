@@ -38,11 +38,13 @@
     }
   },
   "advisoryDisposition": {
-    "checkedAt": "2026-07-23",
+    "checkedAt": "2026-09-03",
     "registryAudit": "not performed because transmitting Relay's dependency graph to the registry was not separately authorized; this contract makes no aggregate vulnerability-count claim",
     "paths": [
       "next > postcss <8.5.10 (GHSA-qx2v-qp2m-jg93) remains upstream-owned; forced npm downgrade is rejected",
-      "exceljs > uuid <11.1.1 (GHSA-w5hq-g745-h8pq) is no longer reachable because Relay removed ExcelJS"
+      "exceljs > uuid <11.1.1 (GHSA-w5hq-g745-h8pq) is no longer reachable because Relay removed ExcelJS",
+      "image-size <=2.0.2 (GHSA-w3rx-r6r6-pgpr, GHSA-5p2g-fcmc-qvqq) had no published fix at any version; Relay removed the dependency and reads dimensions with sharp, which was already required for thumbnails",
+      "fast-uri, ip-address, js-yaml and tar HIGH advisories were cleared by minimum patch bumps rather than major upgrades; fast-uri and ip-address are pinned through root overrides because they are transitive under @anthropic-ai/claude-agent-sdk"
     ],
     "decision": "Reject npm audit force fixes and root-only overrides that disappear for npx customers. Retain authoritative advisory review, maintained spreadsheet dependencies, consumer regressions, and the exact deprecation guard."
   },

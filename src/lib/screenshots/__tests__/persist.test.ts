@@ -80,7 +80,7 @@ describe("persistScreenshot", () => {
       toolName: "mcp__chrome-devtools__take_screenshot",
     });
 
-    // image-size will fail on invalid data
+    // sharp throws on data that is not a decodable image
     expect(result).toBeNull();
   });
 
