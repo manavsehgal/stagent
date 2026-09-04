@@ -113,7 +113,8 @@ jobs:
         with:
           # npm 12 requires ^22.22.2, ^24.15.0, or >=26. Use an exact current
           # compatible line so this gate cannot drift with the runner image.
-          node-version: "24.15.0"
+          # 24.20.0 is the current Node 24 LTS patch and satisfies ^24.15.0.
+          node-version: "24.20.0"
           cache: npm
 
       - name: Select the npm 12 compatibility target

@@ -444,7 +444,16 @@ test("workflow contract is always-on, reusable, read-only, and release-blocking"
   const npm12SetupNode = publish.jobs["npm12-first-run"].steps.find(
     (step) => step.uses?.startsWith("actions/setup-node@")
   );
-  assert.equal(npm12SetupNode?.with?.["node-version"], "24.15.0");
+  // npm 12 requires ^22.22.2, ^24.15.0 or >=26. Assert the CONSTRAINT rather
+  // than one exact patch, so a routine Node 24 patch bump does not fail this
+  // contract while a downgrade below npm 12's floor still does.
+  const npm12Node = npm12SetupNode?.with?.["node-version"];
+  assert.match(npm12Node, /^24\.\d+\.\d+$/);
+  const [, npm12Minor] = npm12Node.split(".").map(Number);
+  assert.ok(
+    npm12Minor >= 15,
+    `npm12 job Node ${npm12Node} is below npm 12's ^24.15.0 requirement`
+  );
   assert.match(publishSource, /npm install --global npm@12\.0\.1/);
   assert.match(publishSource, /npm run smoke:npm12/);
   assert.doesNotMatch(publishSource, /npx vitest run src\/lib\/licensing/);
