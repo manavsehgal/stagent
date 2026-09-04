@@ -1,8 +1,8 @@
 {
-  "bundleHash": "6256332ca8b50536613cc43b01eabdf404e8d96e9b955f2b82c45b9aadebda1e",
+  "bundleHash": "e8930583566889cfd5ff4b891ee4984b458f567022e383ba85d9c55ad4f7b266",
   "corpus": {
     "apiDocsVersion": "2026-07-08.initial-plan",
-    "apiTrackerHash": "377ba160da4ad73952b4e5d25c100dcbceee0e6a1b9c2e03cdc2059f8a046116",
+    "apiTrackerHash": "907598b79d33e8a1bfc00a6cda5890b13a00bb6e6f47604bf0c79945689a62de",
     "guideTrackerHash": "847e01d11915d2f2575cf7d86075b7907306b4f32e2f0750d7e92758bb158fa0",
     "guideVersion": "2026-07-09.narrative-book-guide",
     "screenshotManifestHash": "9edc0914b86fa50ac64d5d75eb98dab49ae43f50915e412e5021e996bd399a86"
@@ -69,13 +69,13 @@
       "title": "Settings, License, And Instance API"
     },
     {
-      "contentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "contentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "id": "api:07-files-observability-maintenance",
       "kind": "api",
       "path": "entries/api.07-files-observability-maintenance.json",
       "publicUrl": "https://orionfold.com/relay/api/07-files-observability-maintenance/",
-      "sourceHash": "2c909c249128eba78e45f5b0c46a2c1d93eda0e3b89ccf808805aa85417f7170",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceHash": "e2eaf555c2cd466834129cd664e8891dff8356f53b2ff57015161bbb3e325171",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API"
     },
     {
@@ -180,9 +180,9 @@
     }
   ],
   "entryCount": 17,
-  "indexHash": "6aa6137155560fd2aee9db6923f8d930b4dbd57052acf5eb7fd7d8a2f440e873",
-  "releaseVersion": "0.46.4",
+  "indexHash": "2246669f6cc2ce1b87278358bcc4faa1d2d461a88aec5aeedb3b72a8412eebab",
+  "releaseVersion": "0.46.5",
   "schemaVersion": 2,
   "sectionCount": 457,
-  "sourceBundleHash": "306ae6c801318b023aefc6cab0c46329ff69d43302681b423438d2387eeecabd"
+  "sourceBundleHash": "97a9fc2bd1a398c6a62d6552432a6314aa1128451d424453955de17e1b0a9683"
 }

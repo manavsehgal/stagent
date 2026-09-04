@@ -31560,7 +31560,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "Who This Is For",
       "kind": "api",
       "ordinal": 0,
@@ -31602,7 +31602,7 @@
       ],
       "sectionId": "who-this-is-for",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 112
     },
@@ -31630,7 +31630,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "Stability",
       "kind": "api",
       "ordinal": 1,
@@ -31672,7 +31672,7 @@
       ],
       "sectionId": "stability",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 52
     },
@@ -31700,7 +31700,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "Local Access Model",
       "kind": "api",
       "ordinal": 2,
@@ -31744,7 +31744,7 @@
       ],
       "sectionId": "local-access-model",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 74
     },
@@ -31772,7 +31772,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "Conventions For This Group",
       "kind": "api",
       "ordinal": 3,
@@ -31815,7 +31815,7 @@
       ],
       "sectionId": "conventions-for-this-group",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 207
     },
@@ -31843,7 +31843,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "Endpoint Families",
       "kind": "api",
       "ordinal": 4,
@@ -31886,7 +31886,7 @@
       ],
       "sectionId": "endpoint-families",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 8
     },
@@ -31914,7 +31914,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "Endpoints",
       "kind": "api",
       "ordinal": 5,
@@ -31956,7 +31956,7 @@
       ],
       "sectionId": "endpoints",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 254
     },
@@ -31984,7 +31984,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "Endpoint Reference",
       "kind": "api",
       "ordinal": 6,
@@ -32027,7 +32027,7 @@
       ],
       "sectionId": "endpoint-reference",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 0
     },
@@ -32055,7 +32055,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "GET /api/health/live",
       "kind": "api",
       "ordinal": 7,
@@ -32097,7 +32097,7 @@
       ],
       "sectionId": "get-api-health-live",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 48
     },
@@ -32125,7 +32125,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "GET /api/health/ready",
       "kind": "api",
       "ordinal": 8,
@@ -32167,7 +32167,7 @@
       ],
       "sectionId": "get-api-health-ready",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 83
     },
@@ -32195,7 +32195,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "POST /api/uploads",
       "kind": "api",
       "ordinal": 9,
@@ -32237,7 +32237,7 @@
       ],
       "sectionId": "post-api-uploads",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 181
     },
@@ -32265,7 +32265,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "GET /api/uploads/{id}",
       "kind": "api",
       "ordinal": 10,
@@ -32307,7 +32307,7 @@
       ],
       "sectionId": "get-api-uploads-id",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 58
     },
@@ -32335,7 +32335,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "DELETE /api/uploads/{id}",
       "kind": "api",
       "ordinal": 11,
@@ -32377,7 +32377,7 @@
       ],
       "sectionId": "delete-api-uploads-id",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 47
     },
@@ -32405,7 +32405,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "POST /api/uploads/cleanup",
       "kind": "api",
       "ordinal": 12,
@@ -32447,7 +32447,7 @@
       ],
       "sectionId": "post-api-uploads-cleanup",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 67
     },
@@ -32475,7 +32475,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "GET /api/recovery",
       "kind": "api",
       "ordinal": 13,
@@ -32517,7 +32517,7 @@
       ],
       "sectionId": "get-api-recovery",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 90
     },
@@ -32545,7 +32545,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "POST /api/recovery",
       "kind": "api",
       "ordinal": 14,
@@ -32587,7 +32587,7 @@
       ],
       "sectionId": "post-api-recovery",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 108
     },
@@ -32615,7 +32615,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "POST /api/recovery/verify",
       "kind": "api",
       "ordinal": 15,
@@ -32657,7 +32657,7 @@
       ],
       "sectionId": "post-api-recovery-verify",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 80
     },
@@ -32685,7 +32685,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "POST /api/recovery/drill",
       "kind": "api",
       "ordinal": 16,
@@ -32727,7 +32727,7 @@
       ],
       "sectionId": "post-api-recovery-drill",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 70
     },
@@ -32755,7 +32755,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "GET /api/snapshots",
       "kind": "api",
       "ordinal": 17,
@@ -32797,7 +32797,7 @@
       ],
       "sectionId": "get-api-snapshots",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 82
     },
@@ -32825,7 +32825,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "POST /api/snapshots",
       "kind": "api",
       "ordinal": 18,
@@ -32867,7 +32867,7 @@
       ],
       "sectionId": "post-api-snapshots",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 117
     },
@@ -32895,7 +32895,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "GET /api/snapshots/{id}",
       "kind": "api",
       "ordinal": 19,
@@ -32937,7 +32937,7 @@
       ],
       "sectionId": "get-api-snapshots-id",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 71
     },
@@ -32965,7 +32965,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "DELETE /api/snapshots/{id}",
       "kind": "api",
       "ordinal": 20,
@@ -33007,7 +33007,7 @@
       ],
       "sectionId": "delete-api-snapshots-id",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 41
     },
@@ -33035,7 +33035,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "POST /api/snapshots/{id}/restore",
       "kind": "api",
       "ordinal": 21,
@@ -33077,7 +33077,7 @@
       ],
       "sectionId": "post-api-snapshots-id-restore",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 149
     },
@@ -33105,7 +33105,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "GET /api/snapshots/settings",
       "kind": "api",
       "ordinal": 22,
@@ -33147,7 +33147,7 @@
       ],
       "sectionId": "get-api-snapshots-settings",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 46
     },
@@ -33175,7 +33175,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "PUT /api/snapshots/settings",
       "kind": "api",
       "ordinal": 23,
@@ -33217,7 +33217,7 @@
       ],
       "sectionId": "put-api-snapshots-settings",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 75
     },
@@ -33245,7 +33245,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "GET /api/plugins",
       "kind": "api",
       "ordinal": 24,
@@ -33287,7 +33287,7 @@
       ],
       "sectionId": "get-api-plugins",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 105
     },
@@ -33315,7 +33315,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "POST /api/plugins/reload",
       "kind": "api",
       "ordinal": 25,
@@ -33357,7 +33357,7 @@
       ],
       "sectionId": "post-api-plugins-reload",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 41
     },
@@ -33385,7 +33385,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "POST /api/plugins/scaffold",
       "kind": "api",
       "ordinal": 26,
@@ -33427,7 +33427,7 @@
       ],
       "sectionId": "post-api-plugins-scaffold",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 199
     },
@@ -33455,7 +33455,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "GET /api/telemetry",
       "kind": "api",
       "ordinal": 27,
@@ -33497,9 +33497,9 @@
       ],
       "sectionId": "get-api-telemetry",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
-      "wordCount": 114
+      "wordCount": 150
     },
     {
       "apiPaths": [
@@ -33525,7 +33525,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "GET /api/diagnostics/chat-streams",
       "kind": "api",
       "ordinal": 28,
@@ -33567,7 +33567,7 @@
       ],
       "sectionId": "get-api-diagnostics-chat-streams",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 109
     },
@@ -33595,7 +33595,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "GET /api/diagnostics/filesystem-skills",
       "kind": "api",
       "ordinal": 29,
@@ -33637,7 +33637,7 @@
       ],
       "sectionId": "get-api-diagnostics-filesystem-skills",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 83
     },
@@ -33665,7 +33665,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "GET /api/logs/stream",
       "kind": "api",
       "ordinal": 30,
@@ -33707,7 +33707,7 @@
       ],
       "sectionId": "get-api-logs-stream",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 136
     },
@@ -33735,7 +33735,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "POST /api/data/seed",
       "kind": "api",
       "ordinal": 31,
@@ -33777,7 +33777,7 @@
       ],
       "sectionId": "post-api-data-seed",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 100
     },
@@ -33805,7 +33805,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "POST /api/data/clear",
       "kind": "api",
       "ordinal": 32,
@@ -33847,7 +33847,7 @@
       ],
       "sectionId": "post-api-data-clear",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 89
     },
@@ -33875,7 +33875,7 @@
         "/api/uploads/{id}",
         "/api/uploads/cleanup"
       ],
-      "entryContentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+      "entryContentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
       "heading": "Do Not Depend On",
       "kind": "api",
       "ordinal": 33,
@@ -33918,7 +33918,7 @@
       ],
       "sectionId": "do-not-depend-on",
       "sourceId": "api:07-files-observability-maintenance",
-      "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+      "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
       "title": "Files, Observability, And Maintenance API",
       "wordCount": 105
     },

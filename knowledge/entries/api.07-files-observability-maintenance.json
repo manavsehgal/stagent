@@ -22,7 +22,7 @@
     "/api/uploads/{id}",
     "/api/uploads/cleanup"
   ],
-  "contentHash": "8f78189beaccaa49964697d45a2aed3ef123eaa61ae8824335442113602dd6f0",
+  "contentHash": "8add4fd8c78b16e75c7d8bedf9b8557ed24cbc7e6f72e1e0ef7dc150a9bcfea1",
   "features": [],
   "id": "api:07-files-observability-maintenance",
   "journeys": [],
@@ -225,8 +225,8 @@
       "heading": "GET /api/telemetry",
       "id": "get-api-telemetry",
       "level": 3,
-      "markdown": "Aggregates a live telemetry snapshot: task, project, and workflow counts, cost windows, runtime info, trend sparklines, and host metrics.\n\n- **Request**: none.\n- **Response** `200`: a snapshot object with, among others, `tasksRunning`, `tasksFailed`, `completedToday`, `activeProjects`, `activeWorkflows`, `reviewPending`, `costTodayMicros`, `costToDateMicros`, `budgetMonthlyCapMicros`, `planPricedMonthlyMicros`, `runtimeLabel`, `providerId`, `runtimeSdkVersion`, a `trends` block (`agentActivity24h`, `completions7d`, `failures7d`), and a `host` block (`cwd`, `folderName`, `branch`, `cpuLoadPct`, `memUsedPct`). Costs are integer micro-dollars. `providerId` can identify Anthropic, OpenAI, Ollama, LiteLLM, or LM Studio; `runtimeSdkVersion` is null when the active provider has no first-party SDK package to report. Host percentages are null on a platform that does not report them.\n- **Errors**: `500` on failure: `{ \"error\": \"TelemetrySnapshotError\", \"message\": \"<message>\" }`.\n- **Side effects**: reads only. The route is not cached.",
-      "wordCount": 114
+      "markdown": "Aggregates a live telemetry snapshot: task, project, and workflow counts, cost windows, runtime info, trend sparklines, and host metrics.\n\n- **Request**: none.\n- **Response** `200`: a snapshot object with, among others, `tasksRunning`, `tasksFailed`, `completedToday`, `activeProjects`, `activeWorkflows`, `reviewPending`, `costTodayMicros`, `costToDateMicros`, `budgetMonthlyCapMicros`, `planPricedMonthlyMicros`, `runtimeLabel`, `providerId`, `runtimeSdkVersion`, a `trends` block (`agentActivity24h`, `completions7d`, `failures7d`), and a `host` block (`cwd`, `cellId`, `folderName`, `branch`, `cpuLoadPct`, `memUsedPct`). Costs are integer micro-dollars. `providerId` can identify Anthropic, OpenAI, Ollama, LiteLLM, or LM Studio; `runtimeSdkVersion` is null when the active provider has no first-party SDK package to report. Host percentages are null on a platform that does not report them. `cellId` is the managed Cell's identity and is null for a dev clone or an npx install, neither of which has one; clients that name the host should prefer `cellId` and fall back to `folderName`.\n- **Errors**: `500` on failure: `{ \"error\": \"TelemetrySnapshotError\", \"message\": \"<message>\" }`.\n- **Side effects**: reads only. The route is not cached.",
+      "wordCount": 150
     },
     {
       "heading": "GET /api/diagnostics/chat-streams",
@@ -271,9 +271,9 @@
       "wordCount": 105
     }
   ],
-  "sourceHash": "2c909c249128eba78e45f5b0c46a2c1d93eda0e3b89ccf808805aa85417f7170",
+  "sourceHash": "e2eaf555c2cd466834129cd664e8891dff8356f53b2ff57015161bbb3e325171",
   "sourcePath": "api/reference/07-files-observability-maintenance.md",
-  "sourceStateHash": "4f633f2148f92d423314a1e3e9b3d5a63dce8c6b263b5ee3968131b9cb0767b9",
+  "sourceStateHash": "b01274639a4abca8b8b5cf4d624b6927b8551b9c1a42f199ca76cfd8b4bce683",
   "stability": "admin-local",
   "summary": "Document upload, snapshot, encrypted recovery, logs, telemetry, diagnostics, seed/clear, and plugin routes.",
   "title": "Files, Observability, And Maintenance API"
