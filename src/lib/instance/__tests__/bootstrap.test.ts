@@ -7,6 +7,15 @@ import { tmpdir } from "os";
 let tempDir: string;
 let dataDir: string;
 
+// Every test here drives a REAL git repository through execFileSync: init,
+// clone, commit, fetch, checkout. On the Windows CI runner that filesystem
+// work costs roughly 24x what it does on macOS (308ms -> 7475ms for the
+// heaviest case), which overran vitest's 5s default and failed the
+// fresh-clone lane on a green commit. The work is genuine, not a hang, so
+// the fix is headroom for the whole file rather than a per-test patch that
+// would leave its siblings equally exposed.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
+
 function runGit(args: string[], cwd: string) {
   execFileSync("git", args, { cwd, stdio: "pipe" });
 }
