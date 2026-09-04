@@ -8,6 +8,35 @@ them; the current package and repository identity is Orionfold Relay.
 
 ## [Unreleased]
 
+## [0.46.5] — 2026-09-03
+
+### Fixed
+
+- **You can now delete a table that has been used.** Before this, a table you
+  had charted, imported into, linked to a task, or attached a workflow trigger
+  to could not be deleted at all. The delete failed with a server error and the
+  table stayed. Delete now clears everything attached to the table first, so it
+  works no matter how much you built on it.
+- **A hosted Cell now shows its own name, not "workspace".** The name in the
+  top rail came from the folder Relay started in. Inside a hosted image that
+  folder is always the same, so every Cell on a Host looked identical. A Cell
+  now shows its own name. Running Relay on your own machine is unchanged and
+  still shows the folder name.
+
+### Changed
+
+- **Installing a pack no longer overwrites a table another pack owns.** Packs
+  are meant to share tables, and that still works. What is blocked is a second
+  pack quietly redefining a shared table with different columns, which used to
+  corrupt the data already in it. That install is now refused, and the message
+  names both packs and the table so you can see the conflict.
+
+### Security
+
+- Fixed two high-severity issues in the components Relay builds on. One was in
+  a package used to generate ids, the other in the base image the deployed
+  Relay runs on. Both are resolved by updating to fixed versions.
+
 ## [0.46.4] — 2026-07-25
 
 ### Added
