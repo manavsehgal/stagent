@@ -50,6 +50,36 @@ function closeServer(server) {
   return new Promise((resolvePromise) => server.close(() => resolvePromise()));
 }
 
+/**
+ * Next dev compiles a route on its first request, so the first hit on a route
+ * this smoke has not touched yet can 404 while compilation is still running.
+ * `waitForReady` already retries the home page, but each API route is a
+ * separate lazily-compiled entry point.
+ *
+ * Retries ONLY a 404, and only until the route compiles. A 404 that outlives
+ * the deadline still fails, and every other status is returned untouched so a
+ * real 500 or the deliberate 502 assertion below is never masked. Deliberately
+ * takes no request options: this warms a route with a GET, it does not replay
+ * mutations.
+ */
+async function warmRoute(url, timeoutMs = 60_000) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    if (child?.exitCode !== null) {
+      throw new Error(`Next dev exited early with ${child.exitCode}`);
+    }
+    const response = await fetch(url);
+    if (response.status !== 404) return response;
+    if (Date.now() >= deadline) {
+      // A 404 that outlives the deadline is a missing route, not a slow
+      // compile. Say so here rather than returning it and letting the caller
+      // report a confusing status mismatch.
+      throw new Error(`${url} still 404 after ${timeoutMs}ms; route does not exist`);
+    }
+    await delay(500);
+  }
+}
+
 async function waitForReady(url, timeoutMs = 120_000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -107,7 +137,7 @@ try {
   assert.match(homeHtml, /Orionfold Relay/);
   assert.match(homeHtml, /Community Edition/);
 
-  const providersResponse = await fetch(`${baseUrl}/api/settings/providers`);
+  const providersResponse = await warmRoute(`${baseUrl}/api/settings/providers`);
   assert.equal(providersResponse.status, 200);
   const providers = await providersResponse.json();
   assert.equal(providers.configuredProviderCount, 0);
@@ -124,6 +154,8 @@ try {
     res.end();
   });
   const ollamaPort = ollamaStub.address().port;
+  // Compile the route before the mutation, so the POST itself is never retried.
+  await warmRoute(`${baseUrl}/api/settings/ollama`);
   const saveResponse = await fetch(`${baseUrl}/api/settings/ollama`, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -131,7 +163,7 @@ try {
   });
   assert.equal(saveResponse.status, 200);
 
-  const availableResponse = await fetch(`${baseUrl}/api/runtimes/ollama`);
+  const availableResponse = await warmRoute(`${baseUrl}/api/runtimes/ollama`);
   assert.equal(availableResponse.status, 200);
   const available = await availableResponse.json();
   assert.deepEqual(available.models.map((model) => model.name), ["relay-smoke"]);
