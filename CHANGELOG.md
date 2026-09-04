@@ -33,9 +33,10 @@ them; the current package and repository identity is Orionfold Relay.
 
 ### Security
 
-- Fixed two high-severity issues in the components Relay builds on. One was in
-  a package used to generate ids, the other in the base image the deployed
-  Relay runs on. Both are resolved by updating to fixed versions.
+- Fixed eight high-severity issues in the components Relay builds on. Most are
+  resolved by updating to fixed versions. One had no fix available at any
+  version, so Relay dropped that component and now reads image sizes with a
+  library it already used.
 
 ## [0.46.4] — 2026-07-25
 
